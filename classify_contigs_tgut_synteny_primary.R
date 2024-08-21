@@ -1,11 +1,11 @@
 # Classify WEHE contigs from HiFi based on coverage and heterozygosity
 # Sophie MacRae Orzechowski
-
 # August 2024
 
 library(dplyr)
 library(ggplot2)
 library(stringr)
+
 setwd("~/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE assembly/findZX/Nesoptilotis_primary")
 
 
@@ -79,7 +79,7 @@ matches_Z_summary$percent_match <- round(matches_Z_summary$windowsum/matches_Z_s
 
 # Designate a threshold for number of windows with hits or percent match
 matches_Z_final <- matches_Z_summary[matches_Z_summary$windowsum>30000,]
-matches_Z_final <- matches_Z_summary[matches_Z_summary$percent_match>0.06,]
+#matches_Z_final <- matches_Z_summary[matches_Z_summary$percent_match>0.06,]
 
 # Curate a list of contigs that are homologous to W in Zebra Finch
 
@@ -99,7 +99,7 @@ matches_W_summary$percent_match <- round(matches_W_summary$windowsum/matches_W_s
 
 # Designate a threshold for number of windows with hits or percent match
 matches_W_final <- matches_W_summary[matches_W_summary$windowsum>10000,]
-matches_W_final <- matches_W_summary[matches_W_summary$percent_match>0.06,]
+#matches_W_final <- matches_W_summary[matches_W_summary$percent_match>0.06,]
 
 
 ##### Estimate coverage for each genomic compartment
@@ -134,26 +134,13 @@ coverage_chr5$contig <- str_remove_all(coverage_chr5$V1,"nleucotis_yamma_366917_
 ggplot(coverage_chr5,aes(contig,log2FM))+
   geom_boxplot()
 
-##### outdated list of Chr 5 autosomal contigs #####
-#chr5_autosomal <- c("nleucotis_yamma_366917_f#pri#ptg000004l",
-#                    "nleucotis_yamma_366917_f#pri#ptg000028l",
-#                    "nleucotis_yamma_366917_f#pri#ptg000029l",
-#                    "nleucotis_yamma_366917_f#pri#ptg000034l",
-#                    "nleucotis_yamma_366917_f#pri#ptg000040l",
-#                    "nleucotis_yamma_366917_f#pri#ptg000041l",
-#                    "nleucotis_yamma_366917_f#pri#ptg000058l",
-#                    "nleucotis_yamma_366917_f#pri#ptg000063l",
-#                    "nleucotis_yamma_366917_f#pri#ptg000069l",
-#                    "nleucotis_yamma_366917_f#pri#ptg000098l",
-#                    "nleucotis_yamma_366917_f#pri#ptg000115l",
-#                    "nleucotis_yamma_366917_f#pri#ptg000225l",
-#                    "nleucotis_yamma_366917_f#pri#ptg000244l",
-#                    "nleucotis_yamma_366917_f#pri#ptg000406l")
-#####
 
 chr5_autosomal <- c("nleucotis_yamma_366917_f#pri#ptg000058l",
                     "nleucotis_yamma_366917_f#pri#ptg000069l",
                     "nleucotis_yamma_366917_f#pri#ptg000098l")
+
+# In checking the matches, I've found that nleucotis_yamma_366917_f#pri#ptg000069l is also matching Chr 18 - NC_044230.2
+# This might very well mean that a microchromosome fusion has occurred with truncated Chr 5. I will leave for now.
 
 chr5_autosomal_lengths <- lengths[lengths$V1%in%chr5_autosomal,]
 sum(chr5_autosomal_lengths$V2)
@@ -163,11 +150,15 @@ chr5_Z <- c("nleucotis_yamma_366917_f#pri#ptg000009l",
 
 
 chr5_Z_lengths <- lengths[lengths$V1%in%chr5_Z,]
+sum(chr5_Z_lengths$V2)
 
 chr5_W <- c("nleucotis_yamma_366917_f#pri#ptg000039l",
             "nleucotis_yamma_366917_f#pri#ptg000071l")
 
 chr5_W_lengths <- lengths[lengths$V1%in%chr5_W,]
+sum(chr5_W_lengths$V2) 
+
+# The result of 24605896 for W-linked Chr 5 means that much of this haplotype is missing from the primary assembly
 
 #### Chr Z coverage calculations ####
 
@@ -188,6 +179,9 @@ chrZ_hits <- c("nleucotis_yamma_366917_f#pri#ptg000025l",
                "nleucotis_yamma_366917_f#pri#ptg000264l")
 
 chrZ_hits_lengths <- lengths[lengths$V1%in%chrZ_hits,]
+sum(chrZ_hits_lengths$V2)
+
+
 
 chrW_hits <- c("nleucotis_yamma_366917_f#pri#ptg000030l",
                "nleucotis_yamma_366917_f#pri#ptg000039l",
@@ -197,6 +191,7 @@ chrW_hits <- c("nleucotis_yamma_366917_f#pri#ptg000030l",
                "nleucotis_yamma_366917_f#pri#ptg000213l")
 
 chrW_hits_lengths <- lengths[lengths$V1%in%chrW_hits,]
+sum(chrW_hits_lengths$V2)
 
 #### Chr W coverage calculations ####
 
@@ -223,8 +218,35 @@ chrW_hits <- c("nleucotis_yamma_366917_f#pri#ptg000030l",
                "nleucotis_yamma_366917_f#pri#ptg000096l",
                "nleucotis_yamma_366917_f#pri#ptg000213l",
                "nleucotis_yamma_366917_f#pri#ptg001422l")
+
+# ptg000030 is mostly W
+# ptg000031 is mostly W
+# ptg000039 is both W and 5 - already identified in Chr 5 above
+# ptg000062 is mostly W
+# ptg000071 is both W and 5 - already identified in Chr 5 above
+# ptg000085 is mostly W and unplaced
+# ptg000088 is mostly W
+# ptg000090 is mostly W and unplaced
+# ptg000091 is mostly unplaced and some W
+# ptg000096 is mostly unplaced and some W
+# ptg000213 is mostly W
+# ptg001422 is W
+
+
+# final coverage estimates for W
+coverage_W_final <- coverage[coverage$V1%in%chrW_hits,]
+coverage_W_final$contig <- str_remove_all(coverage_W_final$V1,"nleucotis_yamma_366917_f#pri#ptg")
+
+ggplot(coverage_W_final,aes(contig,log2FM))+
+  geom_boxplot()+
+  theme(axis.text.x=element_text(angle=45))
+
+
 chrW_hits_lengths <- lengths[lengths$V1%in%chrW_hits,]
-sum(chrW_hits_lengths$V2)
+sum(chrW_hits_lengths$V2) 
+
+# The total amount of W-linked contigs I've found so far is 53636085, which means I'm still missing ~ 30 Mb of neo-W haplotype
+# in this primary assembly
 
 # adding to ChrZ hits from above
 chrZ_hits <- c("nleucotis_yamma_366917_f#pri#ptg000025l",
@@ -237,9 +259,72 @@ chrZ_hits <- c("nleucotis_yamma_366917_f#pri#ptg000025l",
                "nleucotis_yamma_366917_f#pri#ptg000111l",
                "nleucotis_yamma_366917_f#pri#ptg000107l",
                "nleucotis_yamma_366917_f#pri#ptg000264l")
+
+
 chrZ_hits_lengths <- lengths[lengths$V1%in%chrZ_hits,]
 sum(chrZ_hits_lengths$V2)
 
+# final coverage estimates for Z
+coverage_Z_final <- coverage[coverage$V1%in%chrZ_hits,]
+coverage_Z_final$contig <- str_remove_all(coverage_Z_final$V1,"nleucotis_yamma_366917_f#pri#ptg")
+
+ggplot(coverage_Z_final,aes(contig,log2FM))+
+  geom_boxplot()+
+  theme(axis.text.x=element_text(angle=45))
+
+
+chrW_hits_lengths <- lengths[lengths$V1%in%chrW_hits,]
+sum(chrW_hits_lengths$V2) 
+
+
+# look at lengths for Chr 5 Z-linked hits 
+chr5_Z <- c("nleucotis_yamma_366917_f#pri#ptg000009l",
+            "nleucotis_yamma_366917_f#pri#ptg000026l")
+
+
+chr5_Z_lengths <- lengths[lengths$V1%in%chr5_Z,]
+sum(chr5_Z_lengths$V2)
+
+neoZ_hits <- c("nleucotis_yamma_366917_f#pri#ptg000025l",
+                "nleucotis_yamma_366917_f#pri#ptg000026l",
+                "nleucotis_yamma_366917_f#pri#ptg000057l",
+                "nleucotis_yamma_366917_f#pri#ptg000065l",
+                "nleucotis_yamma_366917_f#pri#ptg000066l",
+                "nleucotis_yamma_366917_f#pri#ptg000072l",
+                "nleucotis_yamma_366917_f#pri#ptg000097l",
+                "nleucotis_yamma_366917_f#pri#ptg000111l",
+                "nleucotis_yamma_366917_f#pri#ptg000107l",
+                "nleucotis_yamma_366917_f#pri#ptg000264l",
+                "nleucotis_yamma_366917_f#pri#ptg000009l")
+
+neoZ_lengths <- lengths[lengths$V1%in%neoZ_hits,]
+sum(neoZ_lengths$V2)
+
+# ptg000025 is mostly ancestral Z
+# ptg000026 is ancestral Z and Chr 5
+# ptg000057 is mostly Chr 1 - why is log2FM so low? remove from final hits
+# ptg000065 is ancestral Z
+# ptg000066 is mostly ancestral Z
+# ptg000072 is mostly ancestral Z
+# ptg000097 is mostly ancestral Z
+# ptg000111 is mostly ancestral Z
+# ptg000107 is mostly W and Chr 35
+# ptg000264 is mostly ancestral Z
+# ptg000009 is Chr 5
+
+neoZ_hits_final <- c("nleucotis_yamma_366917_f#pri#ptg000025l",
+                     "nleucotis_yamma_366917_f#pri#ptg000026l",
+                     "nleucotis_yamma_366917_f#pri#ptg000517l", # 517 is a scaffold identified by ragtag
+                     "nleucotis_yamma_366917_f#pri#ptg000065l",
+                     "nleucotis_yamma_366917_f#pri#ptg000066l",
+                     "nleucotis_yamma_366917_f#pri#ptg000072l",
+                     "nleucotis_yamma_366917_f#pri#ptg000097l",
+                     "nleucotis_yamma_366917_f#pri#ptg000111l",
+                     "nleucotis_yamma_366917_f#pri#ptg000264l",
+                     "nleucotis_yamma_366917_f#pri#ptg000009l")
+
+neoZ_lengths <- lengths[lengths$V1%in%neoZ_hits_final,]
+sum(neoZ_lengths$V2)
 
 #### Calculate mean depth and log2FM depth #####
 
