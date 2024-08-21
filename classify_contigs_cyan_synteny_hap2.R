@@ -62,8 +62,6 @@ matches_neoZ_final <- matches_neoZ_summary[matches_neoZ_summary$windowsum>35000,
 matches_neoZ_final <- matches_neoZ_summary[matches_neoZ_summary$percent_match>0.10,]
 
 
-
-
 # Curate a list of contigs that are homologous to neo-W in Blue-faced Honeyeater
 
 matches_neoW <- matches[matches$V8=="scaffold_5",]
