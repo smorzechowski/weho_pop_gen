@@ -328,7 +328,7 @@ sum(neoZ_lengths$V2)
 
 #### Calculate mean depth and log2FM depth #####
 
-summary <- coverage %>% select(V1,Fnorm,Mnorm,V4,V5) %>%
+coverage_summary <- coverage %>% select(V1,Fnorm,Mnorm,V4,V5) %>%
   group_by(V1) %>%
   summarize(meanFnorm = mean(Fnorm,na.rm=TRUE),
             meanMnorm = mean(Mnorm,na.rm=TRUE),
@@ -337,4 +337,12 @@ summary <- coverage %>% select(V1,Fnorm,Mnorm,V4,V5) %>%
   as.data.frame()
 
 
-summary$log2FM <- log2(summary$meanF/summary$meanM)
+coverage_summary$log2FM <- log2(coverage_summary$meanF/coverage_summary$meanM)
+
+### Additional contigs found that are likely W-linked and have no synteny matches ####
+# nleucotis_yamma_366917_f#pri#ptg001094l
+# nleucotis_yamma_366917_f#pri#ptg001195l
+# nleucotis_yamma_366917_f#pri#ptg000318l
+# nleucotis_yamma_366917_f#pri#ptg001220l
+# 
+

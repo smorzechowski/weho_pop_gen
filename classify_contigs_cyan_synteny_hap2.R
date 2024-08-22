@@ -57,6 +57,7 @@ matches_neoZ_summary <- matches_neoZ %>% select(V1,window_hits) %>%
 
 matches_neoZ_summary <- left_join(matches_neoZ_summary,lengths)
 matches_neoZ_summary$percent_match <- matches_neoZ_summary$windowsum/matches_neoZ_summary$V2
+
 # Designate a threshold for number of windows with hits, or percentage match
 matches_neoZ_final <- matches_neoZ_summary[matches_neoZ_summary$windowsum>35000,]
 matches_neoZ_final <- matches_neoZ_summary[matches_neoZ_summary$percent_match>0.10,]
@@ -106,7 +107,7 @@ coverage$log2FM <- log2(coverage$Fnorm/coverage$Mnorm)
 
 #### neo-Z coverage calculations ####
 
-# Subset coverage based on window hits to Chr 5
+# Subset coverage based on window hits to neo-Z
 coverage_neoZ <- coverage[coverage$V1%in%matches_neoZ_final$V1,]
 coverage_neoZ$contig <- str_remove_all(coverage_neoZ$V1,"nleucotis_yamma_366917_f.hap2#pri#")
 
@@ -130,6 +131,13 @@ neoZ_lengths <- lengths[lengths$V1%in%neoZ,]
 neoZ_hap2 <- sum(neoZ_lengths$V2)
 neoZ_hap2
 
+# h2tg000008 is mostly added Z
+# h2tg000050 is ancestral Z
+# h2tg000076 is ancestral Z
+# h2tg000082 is mostly ancestral Z
+# h2tg000223 is ancestral Z
+# h2tg000289 is ancestral Z
+# h2tg000772 matches added Z and W, very short
 
 #### neo-W coverage calculations ####
 
@@ -156,9 +164,46 @@ neoW_hap2 <- sum(chrW_hits_lengths$V2)
 neoW_hap2
 
 
+# h2tg000039 is added W
+# h2tg000069 is added W
+# h2tg000081 is added W and ancestral W
+# h2tg000101 is mostly scaffold_35 - remove - no signs of sex-linkage
+# h2tg000287 is added W
+# h2tg000769 is mostly scaffold_38 - remove - no signs of sex-linkage
+# h2tg001519 is ancestral W?
+# h2tg001715 is added W? very small 
+
+chrW_hits_final <- c("nleucotis_yamma_366917_f.hap2#pri#h2tg000039l",
+               "nleucotis_yamma_366917_f.hap2#pri#h2tg000069l",
+               "nleucotis_yamma_366917_f.hap2#pri#h2tg000081l",
+               "nleucotis_yamma_366917_f.hap2#pri#h2tg000287l",
+               "nleucotis_yamma_366917_f.hap2#pri#h2tg001519l",
+               "nleucotis_yamma_366917_f.hap2#pri#h2tg001715l")
+
+chrW_hits_lengths <- lengths[lengths$V1%in%chrW_hits_final,]
+neoW_hap2 <- sum(chrW_hits_lengths$V2)
+neoW_hap2
+
+neoW_hap2_lengths <- chrW_hits_lengths$V2
+neoW_hap2_lengths
+
+# final coverage estimates
+coverage_neoW_final <- coverage[coverage$V1%in%chrW_hits_final,]
+
+coverage_neoW_final$contig <- str_remove_all(coverage_neoW_final$V1,"nleucotis_yamma_366917_f.hap2#pri#")
+
+Whap2plot <- ggplot(coverage_neoW_final,aes(contig,log2FM))+
+  geom_boxplot()+
+  theme(axis.text.x=element_text(angle=45))
+Whap2plot
+
+matches_neoW_hap2 <- matches[matches$V1%in%chrW_hits_final,]
+
+
+
 #### Calculate mean depth and log2FM depth #####
 
-summary <- coverage %>% select(V1,Fnorm,Mnorm,V4,V5) %>%
+coverage_summary <- coverage %>% select(V1,Fnorm,Mnorm,V4,V5) %>%
   group_by(V1) %>%
   summarize(meanFnorm = mean(Fnorm,na.rm=TRUE),
             meanMnorm = mean(Mnorm,na.rm=TRUE),
@@ -167,4 +212,4 @@ summary <- coverage %>% select(V1,Fnorm,Mnorm,V4,V5) %>%
   as.data.frame()
 
 
-summary$log2FM <- log2(summary$meanF/summary$meanM)
+coverage_summary$log2FM <- log2(coverage_summary$meanF/coverage_summary$meanM)

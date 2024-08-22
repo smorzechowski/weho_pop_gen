@@ -116,17 +116,27 @@ ggplot(coverage_neoZ,aes(contig,log2FM))+
 
 
 neoZ <- c("nleucotis_yamma_366917_f.hap1#pri#h1tg000022l",
-               "nleucotis_yamma_366917_f.hap1#pri#h1tg000024l",
-               "nleucotis_yamma_366917_f.hap1#pri#h1tg000079l",
-               "nleucotis_yamma_366917_f.hap1#pri#h1tg000137l",
-               "nleucotis_yamma_366917_f.hap1#pri#h1tg000332l",
-               "nleucotis_yamma_366917_f.hap1#pri#h1tg001159l",
-               "nleucotis_yamma_366917_f.hap1#pri#h1tg001300l")
-               #"nleucotis_yamma_366917_f.hap1#pri#h1tg000028l")
+          "nleucotis_yamma_366917_f.hap1#pri#h1tg000024l",
+          "nleucotis_yamma_366917_f.hap1#pri#h1tg000079l",
+          "nleucotis_yamma_366917_f.hap1#pri#h1tg000137l",
+          "nleucotis_yamma_366917_f.hap1#pri#h1tg000332l",
+          "nleucotis_yamma_366917_f.hap1#pri#h1tg001159l",
+          "nleucotis_yamma_366917_f.hap1#pri#h1tg001300l")
+
+#"nleucotis_yamma_366917_f.hap1#pri#h1tg000028l")
 
 neoZ_lengths <- lengths[lengths$V1%in%neoZ,]
 neoZ_hap1 <- sum(neoZ_lengths$V2)
 neoZ_hap1
+
+# h1tg000022 is ancestral Z
+# h1tg000024 is ancestral Z and added Z
+# h1tg000079 is ancestral Z
+# h1tg000137 is ancestral Z
+# h1tg000332 is ancestral Z
+# h1tg001159 is very end of New PAR - small
+# h1tg001300 is ancestral Z
+# h1tg000028 is new PAR - Wlinked - remove from neo-Z
 
 
 #### neo-W coverage calculations ####
@@ -148,9 +158,37 @@ chrW_hits <- c("nleucotis_yamma_366917_f.hap1#pri#h1tg000028l",
                "nleucotis_yamma_366917_f.hap1#pri#h1tg000251l",
                "nleucotis_yamma_366917_f.hap1#pri#h1tg001630l",
                "nleucotis_yamma_366917_f.hap1#pri#h1tg002045l")
+
+
 chrW_hits_lengths <- lengths[lengths$V1%in%chrW_hits,]
 neoW_hap1 <- sum(chrW_hits_lengths$V2)
 neoW_hap1
+neoW_hap1_lengths <- chrW_hits_lengths$V2
+neoW_hap1_lengths
+
+matches_neoW_hap1 <- matches[matches$V1%in%chrW_hits,]
+matches_neoW_haps_combined <- rbind(matches_neoW_hap1,matches_neoW_hap2)
+
+# final coverage estimates
+coverage_neoW_final <- coverage[coverage$V1%in%chrW_hits,]
+
+coverage_neoW_final$contig <- str_remove_all(coverage_neoW_final$V1,"nleucotis_yamma_366917_f.hap1#pri#")
+
+Whap1plot <- ggplot(coverage_neoW_final,aes(contig,log2FM))+
+  geom_boxplot()+
+  theme(axis.text.x=element_text(angle=45))
+Whap1plot
+
+
+# h1tg000028 is new PAR - Wlinked
+# h1tg000031 is Wlinked
+# h1tg000037 is Wlinked
+# h1tg000072 is Wlinked
+# h1tg000112 is Wlinked
+# h1tg000251 is Wlinked
+# h1tg001630 is Wlinked - small
+# h1tg002045 is Wlinked
+
 
 #### Calculate mean depth and log2FM depth #####
 
