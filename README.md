@@ -1,6 +1,6 @@
-Order of operations
+#Order of operations
 
-For GATK pipeline
+##GATK pipeline
 1. trimgalore.jobscript
 2. bwa_sort.jobscript
 3. merge_dedup_flag.jobscript
@@ -11,7 +11,7 @@ For GATK pipeline
 8. Filter VCF files
 9. Run PCA
 
-For ANGSD pipeline
+##ANGSD pipeline
 1. trimgalore.jobscript
 2. bwa_sort.jobscript
 3. merge_dedup_clip.jobscript
