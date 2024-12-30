@@ -1,0 +1,53 @@
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH -n 1
+#SBATCH -p edwards,shared
+#SBATCH -e log/indel_realign%A.err
+#SBATCH -o log/indel_realign%A.out
+#SBATCH -J indel_realign
+#SBATCH --mem=160g
+#SBATCH --time=72:00:00
+#SBATCH --account=wakeley_lab
+
+module load python
+#source activate gatk_3.8
+source activate gatk_3.7
+
+# Full path to a list of merged, deduplicated, and overlap clipped bam files. Suffix of ".list"
+BAMLIST='/n/holyscratch01/edwards_lab/smorzechowski/meliphagid/analysis/2024-08-12/12-bwa/clip/bamlist_fullpath.list'
+GENOME='/n/holylfs04/LABS/edwards_lab/Lab/smorzechowski/meliphagid/ReferenceAssemblies/Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded_PAR_masked.fasta'
+OUTDIR='/n/holyscratch01/edwards_lab/smorzechowski/meliphagid/analysis/2024-08-12/12-bwa/indel'
+
+#Check output directories exist & create them as needed
+[ -d $OUTDIR ] || mkdir -p $OUTDIR
+
+## Create dict file
+#module load jdk/20.0.1-fasrc01
+#PICARD='/n/home09/smorzechowski/bin/picard/build/libs/picard.jar'
+#java -jar $PICARD CreateSequenceDictionary \
+#      R=$GENOME \
+#      O=/n/holylfs04/LABS/edwards_lab/Lab/smorzechowski/meliphagid/ReferenceAssemblies/Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded_PAR_masked.dict
+
+## Realign around indels
+# This is done across all samples at once
+
+## Create list of potential indels
+# this can be multithreaded, but IndelRealigner cannot
+
+#java -Xmx40G -jar /n/home09/smorzechowski/bin/GenomeAnalysisTK-3.8-0-ge9d806836/GenomeAnalysisTK.jar \
+#-T RealignerTargetCreator \
+#-R $GENOME \
+#-I $BAMLIST \
+#-o $OUTDIR'/all_samples_for_indel_realigner.intervals' \
+#-drf BadMate \
+#-nt 16
+
+## Run the indel realigner tool
+#java -Xmx150G -jar /n/home09/smorzechowski/bin/GenomeAnalysisTK-3.8-0-ge9d806836/GenomeAnalysisTK.jar \
+java -Xmx100G -jar /n/home09/smorzechowski/.conda/envs/gatk_3.7/opt/gatk-3.7/GenomeAnalysisTK.jar \
+-T IndelRealigner \
+-R $GENOME \
+-I $BAMLIST \
+-targetIntervals $OUTDIR'/all_samples_for_indel_realigner.intervals' \
+--consensusDeterminationModel USE_READS  \
+--nWayOut _realigned.bam

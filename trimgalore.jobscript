@@ -1,0 +1,29 @@
+#!/bin/bash
+#SBATCH -J trimgalore
+#SBATCH -n 1                      # Use 1 cores for the job
+#SBATCH -t 0-6:00                 # Runtime in D-HH:MM
+#SBATCH -p serial_requeue         # Partition to submit to
+#SBATCH --mem=6000                # Memory pool for all cores (see also --mem-per-cpu)
+#SBATCH -o log/trimgalore_PE.%A.out   # File to which STDOUT will be written
+#SBATCH -e log/trimgalore_PE.%A.err   # File to which STDERR will be written
+#SBATCH --mail-type=FAIL           # Type of email notification- BEGIN,END,FAIL,ALL
+#SBATCH --mail-user=smorzechowski@g.harvard.edu # Email to send notifications to
+
+module purge
+module load python
+source activate cutadapt
+# this env includes fastqc as well
+
+
+# $1 = R1 reads
+# $2 = R2 reads
+
+TRIMGALORE="/n/home09/smorzechowski/bin/TrimGalore-0.6.6/trim_galore"
+
+# SEE OPTIONS $TRIMGALORE --help
+
+# remove retained_unpaired, length=36 for paired
+# set quality to 0 to include all base qualities, which ANGSD can handle in genotype likelihood
+# removing bases with quality less than 20 is standard for GATK and other variant callers
+
+$TRIMGALORE --quality 20 --phred33 --fastqc --paired --output_dir trimmed_reads_all_qual --length 36 --stringency 3 -e 0.1 $1 $2

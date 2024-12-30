@@ -1,0 +1,34 @@
+#!/bin/bash
+#SBATCH -p edwards,shared
+#SBATCH -n 18
+#SBATCH -N 1
+#SBATCH --mem 100G
+#SBATCH -t 3-00:00
+#SBATCH -J DBImport
+#SBATCH -o log/DBImport%A_%a.out
+#SBATCH -e log/DBImport%A_%a.err
+#SBATCH --array=2
+#SBATCH --account=wakeley_lab
+
+
+BASEDIR='/n/holyscratch01/edwards_lab/smorzechowski/meliphagid/analysis/2024-08-12/13-gatk'
+TMPDIR=/n/holyscratch01/edwards_lab/smorzechowski/meliphagid/analysis/2024-08-12/13-gatk/tmp_"${SLURM_ARRAY_TASK_ID}"
+REFDIR='/n/holylfs04/LABS/edwards_lab/Lab/smorzechowski/meliphagid/ReferenceAssemblies'
+
+# make tmp dir if it doesn't already exist
+[ -d $TMPDIR ] || mkdir -p $TMPDIR
+
+export PATH="/n/home09/smorzechowski/bin/gatk-4.6.0.0/gatk/:$PATH"
+module purge
+module load python
+module load jdk/20.0.1-fasrc01
+
+/n/home09/smorzechowski/bin/gatk-4.6.0.0/gatk --java-options "-Xmx60G" \
+GenomicsDBImport \
+--genomicsdb-workspace-path $BASEDIR/gDBI_"${SLURM_ARRAY_TASK_ID}" \
+-L $REFDIR/Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded_PAR_masked.fasta_"${SLURM_ARRAY_TASK_ID}".intervals \
+--batch-size 50 \
+--merge-input-intervals \
+--tmp-dir $TMPDIR \
+--sample-name-map $BASEDIR/genomicsDBImport_samplemap_interval_"${SLURM_ARRAY_TASK_ID}".txt \
+--reader-threads 18

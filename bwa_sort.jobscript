@@ -1,0 +1,68 @@
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH -n 16
+#SBATCH -p edwards
+#SBATCH -e log/bwa_sort%A.err
+#SBATCH -o log/bwa_sort%A.out
+#SBATCH -J bwa_sort
+#SBATCH --mem=50g
+#SBATCH --time=24:00:00
+#SBATCH --account=wakeley_lab
+
+
+# Input parameters
+RAW_DIR='/n/holyscratch01/edwards_lab/smorzechowski/meliphagid/analysis/2024-08-12/12-bwa/raw'
+DEDUP_DIR='/n/holyscratch01/edwards_lab/smorzechowski/meliphagid/analysis/2024-08-12/12-bwa/dedup'
+TMP_DIR='/n/holyscratch01/edwards_lab/smorzechowski/meliphagid/analysis/2024-08-12/12-bwa/tmp'
+GENOME='/n/holylfs04/LABS/edwards_lab/Lab/smorzechowski/meliphagid/ReferenceAssemblies/Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded_PAR_masked.fasta'
+INDEXBASE='Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded_PAR_masked'
+FASTQ1=$1
+FASTQ2=$2
+CPU=16
+FLOWCELL='LH00541'
+LANE=$3
+FLOWCELL_BARCODE='22KV7YLT3'
+SAMPLE=$4
+PLATFORM='Illumina'
+LIBPREP='P536'
+
+
+module purge
+module load python
+source activate samtools
+#source activate BamUtil
+
+module load jdk/20.0.1-fasrc01
+
+PICARD='/n/home09/smorzechowski/bin/picard/build/libs/picard.jar'
+# this comes from ArimaGenomics mapping_pipeline
+STATS='/n/home09/smorzechowski/bin/get_stats.pl'
+BWA_PATH='/n/home09/smorzechowski/bin/bwa'
+#BWA_PATH='/n/home09/smorzechowski/bin/bwa-mem2-2.2.1_x64-linux'
+
+#Check output directories exist & create them as needed
+[ -d $RAW_DIR ] || mkdir -p $RAW_DIR
+[ -d $TMP_DIR ] || mkdir -p $TMP_DIR
+[ -d $DEDUP_DIR ] || mkdir -p $DEDUP_DIR
+
+# create bwa index if necessary - only do this once
+[ -f ${INDEXBASE}.sa ] || $BWA_PATH/bwa index -p $INDEXBASE $GENOME
+
+# call bwa and convert to bam, directly sort
+# https://www.biostars.org/p/319730/
+# -M : "mark shorter split hits as secondary
+# -R : Read group information
+# '@RG\tID:$ID\tSM:$SM\tLB:$LB\tPU:$PU\tPL:$PL'
+
+$BWA_PATH/bwa mem $INDEXBASE $FASTQ1 $FASTQ2 -t $CPU -M -R $(echo "@RG\tID:$FLOWCELL"_"$LANE\tSM:$SAMPLE\tLB:$LIBPREP\tPU:$FLOWCELL_BARCODE"_"$LANE"_"$SAMPLE\tPL:$PLATFORM") \
+ | samtools sort -@ $CPU --output-fmt BAM -o $RAW_DIR/${SAMPLE}_${LANE}_bwa_sort.bam
+
+# Clip overlapping paired end reads (only necessary for paired-end data, so if you're only running se samples, you can comment this step out)
+# bam clipOverlap --in $RAW_DIR/${SAMPLE}_${LANE}_bwa_sort.bam --out $RAW_DIR/${SAMPLE}_${LANE}_bwa_sort_clip.bam --stats
+
+# validate the bam files
+java -Xmx30G \
+-jar $PICARD ValidateSamFile \
+      I=$RAW_DIR/${SAMPLE}_${LANE}_bwa_sort.bam \
+      MODE=SUMMARY
+
