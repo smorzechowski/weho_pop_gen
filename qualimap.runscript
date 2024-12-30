@@ -1,0 +1,11 @@
+#!/bin/bash
+
+#sample_names='samplenames.txt'
+#sample_names='samplenames_test.txt'
+#sample_names='samplenames_remaining.txt'
+sample_names='samplenames_2final.txt'
+
+cat $sample_names |
+while read sample; do
+sbatch qualimap.jobscript $sample;
+done

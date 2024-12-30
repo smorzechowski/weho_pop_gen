@@ -1,0 +1,26 @@
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH -n 1
+#SBATCH -p edwards,shared
+#SBATCH -e log/qualimap%A.err
+#SBATCH -o log/qualimap%A.out
+#SBATCH -J qualimap
+#SBATCH --mem=25g
+#SBATCH --time=72:00:00
+#SBATCH --account=wakeley_lab
+
+
+module load python
+source activate /n/holylabs/LABS/edwards_lab/Users/smorzechowski/conda/qualimap
+
+sample=$1
+
+#bam_path=/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/06-bwa/dedup_flag
+bam_path=/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/06-bwa/clip
+#out_path=/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/10-qualimap/qualimap
+out_path=/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/10-qualimap/qualimap_final
+
+
+#qualimap bamqc -bam ${bam_path}/${sample}_bwa_merge_dedup_flag_sort_fixmate.bam -sd -c -nw 400 -hm 3 -outdir $out_path/${sample} --java-mem-size=25G
+#qualimap bamqc -bam ${bam_path}/${sample}_bwa_merge_dedup_clip_sort_fixmate.bam -sd -c -nw 400 -hm 3 -outdir $out_path/${sample} --java-mem-size=25G
+qualimap bamqc -bam ${bam_path}/${sample}_bwa_dedup_clip_sort_fixmate.bam -sd -c -nw 400 -hm 3 -outdir $out_path/${sample} --java-mem-size=25G
