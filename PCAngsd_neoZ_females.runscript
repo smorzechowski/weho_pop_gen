@@ -1,0 +1,10 @@
+#!/bin/bash
+
+
+# Run ANGSD on Z with females only, specifying haploid -isHap 1
+# In this version of the neo-Z, the new PAR is excluded
+
+bamlist='femalebamspath.txt'
+region='neoZ.txt'
+out='Nleu_neoZ'
+sbatch PCAngsd_neoZ_females.jobscript $bamlist $region $out

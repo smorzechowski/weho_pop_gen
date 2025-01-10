@@ -1,0 +1,44 @@
+#!/bin/bash
+#SBATCH -p test        # Partition to submit to
+#SBATCH -n 1              # Number of cores
+#SBATCH -t 00-12:00       # Runtime in days-hours:minutes
+#SBATCH --mem 10g         # Memory in MB
+#SBATCH -J split_beagle          # job name
+#SBATCH -o log/split_beagle.%A.out        # File to which standard out will be written
+#SBATCH -e log/split_beagle.%A.err        # File to which standard err will be written
+#SBATCH --mail-type=FAIL           # Type of email notification- BEGIN,END,FAIL,ALL
+#SBATCH --mail-user=smorzechowski@g.harvard.edu  # Email to which notifications will be sent
+#SBATCH --account=wakeley_lab
+
+BASEDIR='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/14-angsd'
+
+#input='Nleu_autos_ANGSD_PCA.beagle.gz'
+#input='Nleu_autos_rm_filt.beagle.gz'
+
+# forgot to include header here, fixed this!
+
+#while read chrom; do
+#    zcat $input | grep -E "^marker|^$chrom" > "${chrom}_rm_filt.beagle"
+#    gzip "${chrom}_rm_filt.beagle"
+# done < autosomes_200kb_to_split.txt
+
+# add the header back!
+#zcat $input | head -n 1 > beagle_header.txt
+
+while read chrom; do
+    zcat "${chrom}_rm_filt.beagle.gz" | cat beagle_header.txt - | gzip > "${chrom}_rm_filt_header.beagle.gz"
+ done < autosomes_200kb_first_40.txt
+
+#autosomes_200kb_first_40.txt this excludes scaffold_1 because I already ran it
+#scaffold_1.txt
+#autosomes_200kb_to_split.txt
+
+
+#while read chrom; do
+#    zcat $input | grep -E "^marker|^$chrom" > "${chrom}.beagle"
+#    gzip "${chrom}.beagle"
+#done < scaffold_1_RagTag
+
+# extract the remaining short scaffolds to keep
+#zcat $input | (head -n 1 && grep -Ff autosomes_200kb_to_keep.txt) > Nleu_autos_200kb_rm_filt_remaining.beagle
+#gzip Nleu_autos_200kb_rm_filt_remaining.beagle

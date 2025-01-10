@@ -1,0 +1,25 @@
+#!/bin/bash
+#SBATCH -p test        # Partition to submit to
+#SBATCH -n 1              # Number of cores
+#SBATCH -t 00-12:00       # Runtime in days-hours:minutes
+#SBATCH --mem 10g         # Memory in MB
+#SBATCH -J split_maf          # job name
+#SBATCH -o log/split_maf.%A.out        # File to which standard out will be written
+#SBATCH -e log/split_maf.%A.err        # File to which standard err will be written
+#SBATCH --mail-type=FAIL           # Type of email notification- BEGIN,END,FAIL,ALL
+#SBATCH --mail-user=smorzechowski@g.harvard.edu  # Email to which notifications will be sent
+#SBATCH --account=wakeley_lab
+
+BASEDIR='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/14-angsd'
+
+#input='Nleu_autos_ANGSD_PCA.mafs.gz'
+input='Nleu_autos_rm_filt.mafs.gz'
+
+#while read chrom; do
+#    zcat $input | grep -E "^chromo|^$chrom" > "${chrom}_rm_filt.mafs"
+#    gzip "${chrom}_rm_filt.mafs"
+# done < autosomes_200kb_to_split.txt
+
+# extract the remaining short scaffolds to keep
+zcat $input | (head -n 1 && grep -wFf autosomes_200kb_to_keep.txt) > Nleu_autos_200kb_rm_filt_remaining.mafs
+gzip Nleu_autos_200kb_rm_filt_remaining.mafs

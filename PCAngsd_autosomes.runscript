@@ -1,0 +1,9 @@
+#!/bin/bash
+
+# Run all autosomes larger than 200kb, filter out repeats
+bamlist='allbamspath.txt'
+region='autosomes_200kb.txt'
+out='Nleu_autos_rm_filt'
+sbatch PCAngsd_autosomes.jobscript $bamlist $region $out
+
+
