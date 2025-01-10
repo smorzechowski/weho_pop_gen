@@ -1,0 +1,27 @@
+#!/bin/bash
+sbatch haplotype_caller_neoW_F.jobscript Moon_365022_F # run last without merge
+#sbatch haplotype_caller_neoW_F.jobscript Walch_121_F
+#sbatch haplotype_caller_neoW_F.jobscript Ben_168_F
+#sbatch haplotype_caller_neoW_F.jobscript Berth_158_F
+#sbatch haplotype_caller_neoW_F.jobscript Inga_170_F
+#sbatch haplotype_caller_neoW_F.jobscript Mallee_320_F
+#sbatch haplotype_caller_neoW_F.jobscript Zost_331_F
+#sbatch haplotype_caller_neoW_F.jobscript Moon_149708_F
+#sbatch haplotype_caller_neoW_F.jobscript Inga_173_F
+#sbatch haplotype_caller_neoW_F.jobscript Mallee_321_F
+#sbatch haplotype_caller_neoW_F.jobscript Nom_099_F
+#sbatch haplotype_caller_neoW_F.jobscript Pill_114_F
+#sbatch haplotype_caller_neoW_F.jobscript Bog_124_F
+#sbatch haplotype_caller_neoW_F.jobscript Berth_162_F
+#sbatch haplotype_caller_neoW_F.jobscript Inga_307_F
+#sbatch haplotype_caller_neoW_F.jobscript Binya_366909_F
+#sbatch haplotype_caller_neoW_F.jobscript Mull_106_F
+#sbatch haplotype_caller_neoW_F.jobscript Berht_163_F
+#sbatch haplotype_caller_neoW_F.jobscript Talla_366926_F
+#sbatch haplotype_caller_neoW_F.jobscript Nom_101_F
+#sbatch haplotype_caller_neoW_F.jobscript Walch_126_F
+#sbatch haplotype_caller_neoW_F.jobscript Reedy_327_F
+#sbatch haplotype_caller_neoW_F.jobscript Ben_166_F
+#sbatch haplotype_caller_neoW_F.jobscript Binya_366912_F
+#sbatch haplotype_caller_neoW_F.jobscript Walch_120_F
+#sbatch haplotype_caller_neoW_F.jobscript Walch_155_F

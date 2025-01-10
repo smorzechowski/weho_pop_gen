@@ -1,0 +1,26 @@
+#!/bin/bash
+#SBATCH -p shared,edwards
+#SBATCH -n 1
+#SBATCH -N 1
+#SBATCH --mem 180G
+#SBATCH -t 3-00:00
+#SBATCH -J genoGVCF_Z_males
+#SBATCH -o log/genoGVCF_Z_males_%A_%a.out
+#SBATCH -e log/genoGVCF_Z_males_%A_%a.err
+
+OUTDIR='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/03-gatk'
+RMDIR='/n/holylfs04/LABS/edwards_lab/Lab/smorzechowski/meliphagid/ReferenceAssemblies/Nleucotis/Nleu_final_genome_softmask'
+
+export PATH="/n/home09/smorzechowski/bin/gatk-4.6.0.0/gatk/:$PATH"
+module purge
+module load jdk/20.0.1-fasrc01
+module load python
+
+/n/home09/smorzechowski/bin/gatk-4.6.0.0/gatk --java-options "-Xmx150G" \
+GenotypeGVCFs \
+-R /n/holylfs04/LABS/edwards_lab/Lab/smorzechowski/meliphagid/ReferenceAssemblies/Nleucotis/Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded_PAR_masked.fasta \
+-all-sites \
+-V ${OUTDIR}/Results/intervals_neoZ_M/Nleu_males_neoZ_cohort.raw.g.vcf.gz \
+-L scaffold_2_RagTag:1-111648260 \
+-XL ${RMDIR}/rm_interval_3_clean.bed \
+-O ${OUTDIR}/Results/intervals_neoZ_M/Nleu_males_neoZ.allsites.vcf.gz \
