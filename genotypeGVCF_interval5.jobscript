@@ -1,0 +1,29 @@
+#!/bin/bash
+#SBATCH -p shared,edwards
+#SBATCH -n 1
+#SBATCH -N 1
+#SBATCH --mem 180G
+#SBATCH -t 3-00:00
+#SBATCH -J gGVCF
+#SBATCH -o log/gGVCF_%A_%a.out
+#SBATCH -e log/gGVCF_%A_%a.err
+#SBATCH --array=2-5
+#SBATCH --account=wakeley_lab
+
+RMDIR='/n/holylfs04/LABS/edwards_lab/Lab/smorzechowski/meliphagid/ReferenceAssemblies/Nleucotis/Nleu_final_genome_softmask'
+OUTDIR='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/13-gatk'
+REFDIR='/n/holylfs04/LABS/edwards_lab/Lab/smorzechowski/meliphagid/ReferenceAssemblies/Nleucotis'
+
+export PATH="/n/home09/smorzechowski/bin/gatk-4.6.0.0/gatk/:$PATH"
+module purge
+module load python
+module load jdk/20.0.1-fasrc01
+
+/n/home09/smorzechowski/bin/gatk-4.6.0.0/gatk --java-options "-Xmx100G -Xms100G" \
+GenotypeGVCFs \
+-R $REFDIR/Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded_PAR_masked.fasta \
+-all-sites \
+-L $REFDIR/nleu_intervals/Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded_PAR_masked.fasta_5_"${SLURM_ARRAY_TASK_ID}".intervals \
+-XL $RMDIR/rm_interval_5_clean.bed \
+-V gendb:///n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/13-gatk/gDBI_5 \
+-O $OUTDIR/Results/Nleu_interval_5_"${SLURM_ARRAY_TASK_ID}".allsites.partial.vcf \

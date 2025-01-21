@@ -1,0 +1,52 @@
+#!/bin/bash
+#SBATCH -p shared          # Partition to submit to
+#SBATCH -n 16              # Number of cores
+#SBATCH -t 03-00:00        # Runtime in days-hours:minutes
+#SBATCH --mem 120g          # Memory in MB
+#SBATCH -J ngsRelate          # job name
+#SBATCH -o log/ngsRelate.%A.out        # File to which standard out will be written
+#SBATCH -e log/ngsRelate.%A.err        # File to which standard err will be written
+#SBATCH --mail-type=FAIL           # Type of email notification- BEGIN,END,FAIL,ALL
+#SBATCH --mail-user=smorzechowski@g.harvard.edu  # Email to which notifications will be sent
+#SBATCH --account=wakeley_lab
+
+BASEDIR='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/14-angsd'
+ANGSD='/n/home09/smorzechowski/bin/angsd/angsd'
+REF='/n/holylfs04/LABS/edwards_lab/Lab/smorzechowski/meliphagid/ReferenceAssemblies/Nleucotis/Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded_PAR_masked.fasta'
+NGSRELATE='/n/home09/smorzechowski/bin/ngsRelate'
+RM_DIR='/n/holylfs04/LABS/edwards_lab/Lab/smorzechowski/meliphagid/ReferenceAssemblies/Nleucotis/Nleu_final_genome_softmask'
+
+bamlist='allbamspath.txt'
+region='autosomes_200kb.txt'
+out='Nleu_autos_200kb_rm_filt'
+
+### First we generate a file with allele frequencies ($out.mafs.gz) and a file with genotype likelihoods ($out.glf.gz).
+
+$ANGSD \
+-b $BASEDIR'/sample_lists/'$bamlist \
+-rf $BASEDIR'/regions/'$region \
+-minMapQ 30 \
+-minQ 30 \
+-GL 2 \
+-doMajorMinor 1 \
+-skipTriallelic 1 \
+-SNP_pval 1e-6 \
+-doMaf 1 \
+-minMaf 0.05 \
+-doGlf 3 \
+-out $BASEDIR'/results/'$out \
+-P 16 \
+-sites $RM_DIR'/Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded_PAR_masked_sites_keep_1based.txt' \
+-remove_bads 1 \
+-uniqueOnly 1 \
+
+### Then we extract the frequency column from the allele frequency file and remove the header (to make it in the format NgsRelate needs)
+zcat $BASEDIR'/results/'$out.mafs.gz | cut -f5 |sed 1d > $out'.freq'
+
+### run NgsRelate
+$NGSRELATE/ngsRelate \
+-g $BASEDIR'/results/'$out.glf.gz \
+-n 74 \
+-f $out'.freq' \
+-O autosomes_ngsRelate_rm_filt \
+-p 16 \

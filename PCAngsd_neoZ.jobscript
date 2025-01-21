@@ -1,0 +1,63 @@
+#!/bin/bash
+#SBATCH -p edwards        # Partition to submit to
+#SBATCH -n 8              # Number of cores
+#SBATCH -t 03-00:00       # Runtime in days-hours:minutes
+#SBATCH --mem 80g         # Memory in MB
+#SBATCH -J angsd          # job name
+#SBATCH -o log/angsd.%A.out        # File to which standard out will be written
+#SBATCH -e log/angsd.%A.err        # File to which standard err will be written
+#SBATCH --mail-type=FAIL           # Type of email notification- BEGIN,END,FAIL,ALL
+#SBATCH --mail-user=smorzechowski@g.harvard.edu  # Email to which notifications will be sent
+#SBATCH --account=wakeley_lab
+
+BASEDIR='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/14-angsd'
+ANGSD='/n/home09/smorzechowski/bin/angsd/angsd'
+REF='/n/holylfs04/LABS/edwards_lab/Lab/smorzechowski/meliphagid/ReferenceAssemblies/Nleucotis/Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded_PAR_masked.fasta'
+
+bamlist=$1
+region=$2
+out=$3
+
+#$ANGSD -b $BASEDIR'/sample_lists/allbamspath.txt' \
+#-anc $REF \
+#-out $BASEDIR'/results/Nleu_SNPs' \
+#-minMapQ 20 \
+#-minQ 20 \
+#-doMaf 1 \
+#-minMaf 0.05 \
+#-SNP_pval 2e-6 \
+#-GL 1 \
+#-doGlf 2 \
+#-doMajorMinor 1 \
+#-doPost 1
+
+# gunzip -c $BASEDIR'/results/MME_SNPs.mafs.gz' | cut -f 1,2,3,4 | tail -n +2 > Global_SNPList_MME_SNPs.txt
+# $ANGSD sites index $BASEDIR'/results/Global_SNPList_MME_SNPs.txt'
+
+# PCA based on all SNPs without LD pruning
+$ANGSD -b $BASEDIR'/sample_lists/'$bamlist \
+-anc $REF \
+-rf $BASEDIR'/regions/'$region \
+-out $BASEDIR'/results/'$out \
+-minMapQ 20 \
+-minQ 20 \
+-doMaf 1 \
+-minMaf 0.05 \
+-SNP_pval 2e-6 \
+-GL 1 \
+-doGlf 2 \
+-doMajorMinor 1 \
+-doPost 1 \
+-doIBS 1 \
+-doCounts 1 \
+-doCov 1 \
+-makeMatrix 1 \
+-P 8
+
+
+
+
+
+
+#-haploid 1 \
+#-doHaplocall 1

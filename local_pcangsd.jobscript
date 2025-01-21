@@ -1,0 +1,56 @@
+#!/bin/bash
+#SBATCH -p edwards,shared # Partition to submit to
+#SBATCH -n 10             # Number of cores
+#SBATCH -t 03-00:00       # Runtime in days-hours:minutes
+#SBATCH --mem 75g         # Memory in MB
+#SBATCH -J local_pcangsd          # job name
+#SBATCH -o log/loc_pangsd.%A.out        # File to which standard out will be written
+#SBATCH -e log/loc_pangsd.%A.err        # File to which standard err will be written
+#SBATCH --mail-type=FAIL           # Type of email notification- BEGIN,END,FAIL,ALL
+#SBATCH --mail-user=smorzechowski@g.harvard.edu  # Email to which notifications will be sent
+#SBATCH --account=wakeley_lab
+
+module load python
+source activate local_pcangsd
+module purge
+
+input=$1
+store=$2
+zarr=$3
+tmp=$4
+prefix=$5
+outdir=$6
+col=$7
+pop=$8
+wind=$9
+var=${10}
+
+# Example of input from the .runscript
+#input='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/14-angsd/results/Nleu_newPAR_rm_filt.beagle.gz'
+#store='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/16-local_pcangsd/results/Nleu_newPAR_rm_filt.zarr'
+#zarr='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/16-local_pcangsd/results/Nleu_newPAR_rm_filt_results.zarr'
+#tmp='/n/home09/smorzechowski/tmp_local_pcangsd'
+#prefix='newPAR'
+
+python /n/home09/smorzechowski/local_pcangsd_script.py $input $store $zarr $tmp $prefix $outdir $col $pop $wind $var
+
+# test first with beagle_files_for_local_pcangsd_test.txt
+# then do all autosomes (first 40) beagle_files_for_local_pcangsd.txt
+# then do all microchromosomes of a certain size in micro_chrom_beagle_files_for_local_pcangsd.txt
+# test first!! micro_chrom_beagle_files_for_local_pcangsd_test.txt
+
+#cat micro_chrom_beagle_files_for_local_pcangsd_test_2.txt | while read line
+#do
+#prefix=`echo $line |sed 's/_header.beagle.gz//g'`
+#input="/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/14-angsd/results/$line"
+#store="/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/16-local_pcangsd/zarr_dir/${prefix}.zarr"
+#zarr="/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/16-local_pcangsd/results/${prefix}_results.zarr"
+#tmp="/n/home09/smorzechowski/tmp_local_pcangsd"
+#outdir="/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/16-local_pcangsd/plots/"
+#col=0
+#pop='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/16-local_pcangsd/all_samples_pops.tsv'
+#wind=10000
+#var=50
+
+#python /n/home09/smorzechowski/local_pcangsd_script.py $input $store $zarr $tmp $prefix $outdir $col $pop $wind $var
+#done

@@ -1,0 +1,51 @@
+#!/bin/bash
+#SBATCH -p test
+#SBATCH -n 1
+#SBATCH -N 1
+#SBATCH --mem 50G
+#SBATCH -t 0-12:00
+#SBATCH -J gatherVCF
+#SBATCH -o log/gatherVCF_%A_%a.out
+#SBATCH -e log/gatherVCF_%A_%a.err
+#SBATCH --account=wakeley_lab
+
+
+export PATH="/n/home09/smorzechowski/bin/gatk-4.6.0.0/gatk/:$PATH"
+module purge
+module load python
+module load jdk/20.0.1-fasrc01
+
+#/n/home09/smorzechowski/bin/gatk-4.6.0.0/gatk --java-options "-Xmx60G -Xms60G" \
+#GatherVcfs \
+#-I /n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/03-gatk/Results/Nleu_interval_1_1.allsites.partial.vcf.gz \
+#-I /n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/03-gatk/Results/Nleu_interval_1_2.allsites.partial.vcf.gz \
+#-I /n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/03-gatk/Results/Nleu_interval_1_3.allsites.partial.vcf.gz \
+#-I /n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/03-gatk/Results/Nleu_interval_1_4.allsites.partial.vcf.gz \
+#-I /n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/03-gatk/Results/Nleu_interval_1_5.allsites.partial.vcf.gz \
+#-I /n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/03-gatk/Results/Nleu_interval_1_6.allsites.partial.vcf.gz \
+#-I /n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/03-gatk/Results/Nleu_interval_1_7.allsites.partial.vcf.gz \
+#-I /n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/03-gatk/Results/Nleu_interval_1_8.allsites.partial.vcf.gz \
+#-I /n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/03-gatk/Results/Nleu_interval_1_9.allsites.partial.vcf.gz \
+#-I /n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/03-gatk/Results/Nleu_interval_1_10.allsites.partial.vcf.gz \
+#-I /n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/03-gatk/Results/Nleu_interval_1_11.allsites.partial.vcf.gz \
+#-I /n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/03-gatk/Results/Nleu_interval_1_12.allsites.partial.vcf.gz \
+#-I /n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/03-gatk/Results/Nleu_interval_1_13.allsites.partial.vcf.gz \
+#-I /n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/03-gatk/Results/Nleu_interval_1_14.allsites.partial.vcf.gz \
+#-I /n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/03-gatk/Results/Nleu_interval_1_15.allsites.partial.vcf.gz \
+#-O /n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/03-gatk/Results/Nleu_interval_1_combined.allsites.partial.vcf.gz
+
+
+/n/home09/smorzechowski/bin/gatk-4.6.0.0/gatk --java-options "-Xmx30G -Xms30G" \
+GatherVcfs \
+-I /n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/03-gatk/Results/Nleu_interval_3_5.allsites.partial.vcf.gz \
+-I /n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/03-gatk/Results/Nleu_interval_3_6.allsites.partial.vcf.gz \
+-I /n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/03-gatk/Results/Nleu_interval_3_7.allsites.partial.vcf.gz \
+-I /n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/03-gatk/Results/Nleu_interval_3_8.allsites.partial.vcf.gz \
+-I /n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/03-gatk/Results/Nleu_interval_3_9.allsites.partial.vcf.gz \
+-I /n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/03-gatk/Results/Nleu_interval_3_10.allsites.partial.vcf.gz \
+-I /n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/03-gatk/Results/Nleu_interval_3_10_1.allsites.partial.vcf.gz \
+-I /n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/03-gatk/Results/Nleu_interval_3_11.allsites.partial.vcf.gz \
+-I /n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/03-gatk/Results/Nleu_interval_3_12.allsites.partial.vcf.gz \
+-I /n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/03-gatk/Results/Nleu_interval_3_12_1.allsites.partial.vcf.gz \
+-O /n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/03-gatk/Results/Nleu_neoZ_all_ind.allsites.partial.vcf.gz \
+--CREATE_INDEX

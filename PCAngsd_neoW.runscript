@@ -1,0 +1,11 @@
+#!/bin/bash
+
+
+# Run ANGSD on W with females only, specifying haploid -isHap 1
+# In this version of the neo-W, the new PAR has been hardmasked
+
+bamlist='femalebamspath.txt'
+region='neoW.txt'
+out='Nleu_neoW_hap'
+
+sbatch PCAngsd_neoW.jobscript $bamlist $region $out

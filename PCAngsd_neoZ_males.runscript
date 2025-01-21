@@ -1,0 +1,29 @@
+#!/bin/bash
+
+
+# Run ANGSD on Z with males only, diploid
+# In this version of the neo-Z, the new PAR is excluded
+
+#bamlist='malebamspath.txt'
+#region='neoZ.txt'
+#out='Nleu_neoZ_males'
+#sbatch PCAngsd_neoZ_males.jobscript $bamlist $region $out
+
+# Rerun the same, but with repetitive sites excluded
+
+#bamlist='malebamspath.txt'
+#region='neoZ.txt'
+#out='Nleu_neoZ_males_rm_filt'
+#sbatch PCAngsd_neoZ_males.jobscript $bamlist $region $out
+
+# Rerun on just the arid males for neo-Z, excluding the Binya male that did not sequence well
+#bamlist='subset_arid_malebams_excl_Binya.txt'
+#region='neoZ.txt'
+#out='Nleu_neoZ_arid_males_rm_filt'
+#sbatch PCAngsd_neoZ_males.jobscript $bamlist $region $out
+
+# Rerun on just the remaining temperate males for neo-Z
+bamlist='subset_temperate_malebams.txt'
+region='neoZ.txt'
+out='Nleu_neoZ_temperate_males_rm_filt'
+sbatch PCAngsd_neoZ_males.jobscript $bamlist $region $out

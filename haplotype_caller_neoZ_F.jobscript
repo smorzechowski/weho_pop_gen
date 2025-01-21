@@ -1,0 +1,40 @@
+#!/bin/bash
+#SBATCH -p shared,edwards
+#SBATCH -n 1
+#SBATCH -N 1
+#SBATCH --mem 40G
+#SBATCH -t 3-00:00
+#SBATCH -J HapC
+#SBATCH -o log/HapC_%A_%a.out
+#SBATCH -e log/HapC_%A_%a.err
+
+
+SAMPLE=$1
+
+OUTDIR='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/03-gatk'
+BAMDIR='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/06-bwa/dedup_flag'
+RMDIR='/n/holylfs04/LABS/edwards_lab/Lab/smorzechowski/meliphagid/ReferenceAssemblies/Nleucotis/Nleu_final_genome_softmask'
+
+# Check output directory exists & create as needed
+[ -d ${OUTDIR}/Results/intervals_neoZ_F ] || mkdir -p ${OUTDIR}/Results/intervals_neoZ_F
+[ -d ${OUTDIR}/Results/intervals_neoZ_F_dip ] || mkdir -p ${OUTDIR}/Results/intervals_neoZ_F_dip
+
+export PATH="/n/home09/smorzechowski/bin/gatk-4.6.0.0/gatk/:$PATH"
+module purge
+module load jdk/20.0.1-fasrc01
+module load python
+
+/n/home09/smorzechowski/bin/gatk-4.6.0.0/gatk --java-options "-Xmx30G" \
+HaplotypeCaller \
+-R /n/holylfs04/LABS/edwards_lab/Lab/smorzechowski/meliphagid/ReferenceAssemblies/Nleucotis/Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded_PAR_masked.fasta \
+-min-pruning 1 \
+-min-dangling-branch-length 1 \
+-I ${BAMDIR}/${SAMPLE}_bwa_dedup_flag_sort_fixmate.bam \
+--emit-ref-confidence GVCF \
+-O ${OUTDIR}/Results/intervals_neoZ_F_dip/"${SAMPLE}"_neoZ.raw.g.vcf.gz \
+-L scaffold_2_RagTag:1-111648260 \
+-XL ${RMDIR}/rm_interval_3_clean.bed \
+
+
+# first ran with -ploidy 1 into intervals_neoZ_F
+# then ran with default -ploidy 2 into intervals_neoZ_F_dip

@@ -1,0 +1,16 @@
+#!/bin/bash
+
+
+# Run ANGSD on newPAR with all individuals, diploid
+
+#bamlist='allbamspath.txt'
+#region='newPAR.txt'
+#out='Nleu_newPAR'
+#sbatch PCAngsd_neoZ_males.jobscript $bamlist $region $out
+
+# rerun with sites filter option to remove repetitive regions
+
+bamlist='allbamspath.txt'
+region='newPAR.txt'
+out='Nleu_newPAR_rm_filt'
+sbatch PCAngsd_neoZ_males.jobscript $bamlist $region $out

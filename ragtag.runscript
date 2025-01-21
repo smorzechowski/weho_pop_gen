@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# Scaffold Nleucotis manually-curated softmasked assembly to Blue-faced Honeyeater HiC scaffolded assembly
+#query='/n/holylfs04/LABS/edwards_lab/Lab/smorzechowski/meliphagid/ReferenceAssemblies/Nleucotis_hifi_v1.0_headclean_softmasked_fcs_fx.fasta'
+#ref='/n/holylfs04/LABS/edwards_lab/Lab/smorzechowski/meliphagid/ReferenceAssemblies/Ecyan_HiC_v3.0.fa'
+#outdir='ref_Ecyan_HiC_v3.0_query_Nleu_v1.0'
+#species='Nleu'
+
+# Run Nleucotis ragtag scaffolded assembly against tgut
+query='/n/holyscratch01/edwards_lab/smorzechowski/meliphagid/analysis/2024-08-12/11-ragtag/ref_Ecyan_HiC_v3.0_query_Nleu_v1.0/Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded.fasta'
+ref='/n/holylfs04/LABS/edwards_lab/Lab/smorzechowski/meliphagid/ncbi_assemblies/ZebraFinchAssembly/GCF_003957565.2_bTaeGut1.4.pri/GCF_003957565.2_bTaeGut1.4.pri_genomic.fna'
+outdir='ref_tgut1.4_query_Nleu_v1.0_scaff'
+species='Nleu'
+
+sbatch ragtag.jobscript $ref $query $outdir $species
