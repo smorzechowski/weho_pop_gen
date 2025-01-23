@@ -57,6 +57,7 @@ matches_neoZ_summary <- matches_neoZ %>% select(V1,window_hits) %>%
 
 matches_neoZ_summary <- left_join(matches_neoZ_summary,lengths)
 matches_neoZ_summary$percent_match <- matches_neoZ_summary$windowsum/matches_neoZ_summary$V2
+
 # Designate a threshold for number of windows with hits, or percentage match
 matches_neoZ_final <- matches_neoZ_summary[matches_neoZ_summary$windowsum>35000,]
 matches_neoZ_final <- matches_neoZ_summary[matches_neoZ_summary$percent_match>0.10,]
@@ -77,6 +78,7 @@ matches_neoW_summary <- matches_neoW %>% select(V1,window_hits) %>%
 
 matches_neoW_summary <- left_join(matches_neoW_summary,lengths)
 matches_neoW_summary$percent_match <- matches_neoW_summary$windowsum/matches_neoW_summary$V2
+
 # Designate a threshold for number of windows with hits or percent match
 matches_neoW_final <- matches_neoW_summary[matches_neoW_summary$windowsum>10000,]
 matches_neoW_final <- matches_neoW_summary[matches_neoW_summary$percent_match>0.10,]
@@ -150,25 +152,29 @@ ggplot(coverage_neoW,aes(contig,log2FM))+
   geom_boxplot()+
   theme(axis.text.x=element_text(angle=45))
 
-chrW_hits <- c("nleucotis_yamma_366917_f.hap1#pri#h1tg000028l",
-               "nleucotis_yamma_366917_f.hap1#pri#h1tg000031l",
+hap1_chrW_hits_final <- c("nleucotis_yamma_366917_f.hap1#pri#h1tg000028l",
                "nleucotis_yamma_366917_f.hap1#pri#h1tg000037l",
                "nleucotis_yamma_366917_f.hap1#pri#h1tg000072l",
                "nleucotis_yamma_366917_f.hap1#pri#h1tg000112l",
                "nleucotis_yamma_366917_f.hap1#pri#h1tg000251l",
                "nleucotis_yamma_366917_f.hap1#pri#h1tg001630l",
-               "nleucotis_yamma_366917_f.hap1#pri#h1tg002045l")
+               "nleucotis_yamma_366917_f.hap1#pri#h1tg002045l",
+               "nleucotis_yamma_366917_f.hap1#pri#h1tg000031l")
+
+# "nleucotis_yamma_366917_f.hap1#pri#h1tg000031l" appears like duplicate of hap2#pri#h2tg000039l
+# Update, actually after manual curation this is false. However, there is perhaps SOME overlap with
+# another contig -- nleucotis_yamma_366917_f.hap2#pri#h2tg000081l
 
 
-chrW_hits_lengths <- lengths[lengths$V1%in%chrW_hits,]
-neoW_hap1 <- sum(chrW_hits_lengths$V2)
+chrW_hap1_hits_lengths <- lengths[lengths$V1%in%hap1_chrW_hits_final,]
+neoW_hap1 <- sum(chrW_hap1_hits_lengths$V2)
 neoW_hap1
-neoW_hap1_lengths <- chrW_hits_lengths$V2
+neoW_hap1_lengths <- chrW_hap1_hits_lengths$V2
 neoW_hap1_lengths
 
 matches_neoW_hap1 <- matches[matches$V1%in%chrW_hits,]
 matches_neoW_haps_combined <- rbind(matches_neoW_hap1,matches_neoW_hap2)
-
+matches_neoW_haps_combined_2 <- rbind(matches_neoW_hap1,matches_neoW_hap2)
 # final coverage estimates
 coverage_neoW_final <- coverage[coverage$V1%in%chrW_hits,]
 
@@ -181,7 +187,7 @@ Whap1plot
 
 
 # h1tg000028 is new PAR - Wlinked
-# h1tg000031 is Wlinked
+# h1tg000031 is Wlinked 
 # h1tg000037 is Wlinked
 # h1tg000072 is Wlinked
 # h1tg000112 is Wlinked
@@ -202,3 +208,10 @@ summary <- coverage %>% select(V1,Fnorm,Mnorm,V4,V5) %>%
 
 
 summary$log2FM <- log2(summary$meanF/summary$meanM)
+
+summary_Wthreshold_hap1 <- summary[summary$log2FM>2 & summary$log2FM<10 & !is.na(summary$log2FM),]
+summary_Wthreshold_hap1_lengths <- lengths[lengths$V1%in%summary_Wthreshold_hap1$V1,]
+summary_Wthreshold_hap1_total <- sum(summary_Wthreshold_hap1_lengths$V2)
+summary_Wthreshold_hap1_total
+
+

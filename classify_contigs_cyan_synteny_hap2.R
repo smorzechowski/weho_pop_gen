@@ -125,6 +125,7 @@ neoZ <- c("nleucotis_yamma_366917_f.hap2#pri#h2tg000008l",
           "nleucotis_yamma_366917_f.hap2#pri#h2tg000772l")
 
 # "nleucotis_yamma_366917_f.hap2#pri#h2tg000023l", this is a repeat, I've discovered!! Very similar contig in hap1 and hap2
+# See "nleucotis_yamma_366917_f.hap1#pri#h1tg000022l" in hap1 for repeat
 
 
 neoZ_lengths <- lengths[lengths$V1%in%neoZ,]
@@ -173,14 +174,14 @@ neoW_hap2
 # h2tg001519 is ancestral W?
 # h2tg001715 is added W? very small 
 
-chrW_hits_final <- c("nleucotis_yamma_366917_f.hap2#pri#h2tg000039l",
+hap2_chrW_hits_final <- c("nleucotis_yamma_366917_f.hap2#pri#h2tg000039l",
                "nleucotis_yamma_366917_f.hap2#pri#h2tg000069l",
                "nleucotis_yamma_366917_f.hap2#pri#h2tg000081l",
                "nleucotis_yamma_366917_f.hap2#pri#h2tg000287l",
                "nleucotis_yamma_366917_f.hap2#pri#h2tg001519l",
                "nleucotis_yamma_366917_f.hap2#pri#h2tg001715l")
 
-chrW_hits_lengths <- lengths[lengths$V1%in%chrW_hits_final,]
+chrW_hap2_hits_lengths <- lengths[lengths$V1%in%chrW_hits_final,]
 neoW_hap2 <- sum(chrW_hits_lengths$V2)
 neoW_hap2
 

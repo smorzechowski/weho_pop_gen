@@ -77,9 +77,11 @@ samples$samples[65]
 samples$samples[66]
 
 ## Third order
-#samples$samples[10]
+samples$samples[11]
+samples$samples[14]
 
-
+samples$samples[38]
+samples$samples[40]
 
 ggplot(data, aes(x = a, y = b, color = KING, size = KING)) +
   geom_point(alpha = 0.7) +

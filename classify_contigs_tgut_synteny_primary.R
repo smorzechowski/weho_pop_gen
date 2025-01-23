@@ -273,8 +273,8 @@ ggplot(coverage_Z_final,aes(contig,log2FM))+
   theme(axis.text.x=element_text(angle=45))
 
 
-chrW_hits_lengths <- lengths[lengths$V1%in%chrW_hits,]
-sum(chrW_hits_lengths$V2) 
+chrZ_hits_lengths <- lengths[lengths$V1%in%chrZ_hits,]
+sum(chrZ_hits_lengths$V2) 
 
 
 # look at lengths for Chr 5 Z-linked hits 
@@ -339,7 +339,7 @@ coverage_summary <- coverage %>% select(V1,Fnorm,Mnorm,V4,V5) %>%
 
 coverage_summary$log2FM <- log2(coverage_summary$meanF/coverage_summary$meanM)
 
-### Additional contigs found that are likely W-linked and have no synteny matches ####
+### Additional primary contigs found that are likely W-linked and have no synteny matches ####
 # nleucotis_yamma_366917_f#pri#ptg001094l
 # nleucotis_yamma_366917_f#pri#ptg001195l
 # nleucotis_yamma_366917_f#pri#ptg000318l
