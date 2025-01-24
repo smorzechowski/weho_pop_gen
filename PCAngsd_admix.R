@@ -83,6 +83,13 @@ ggplot(admix_long, aes(x = x_pos, y = proportion, fill = population)) +
             inherit.aes = FALSE,alpha = 1)+
   scale_fill_manual(values = custom_colors)
 
+admix_long$population
+
+
+
+
+
+
 
 ############################################################################################################
 
@@ -191,9 +198,9 @@ plot = barplot(t(as.matrix(subset(admix.id.sort, select=q1:q2))), col=c("firebri
 #  arrange(desc(q1))
 
 admix_data <- admix.id %>%
-  arrange(desc(q1)) %>%
+  arrange(q1) %>%
   mutate(
-    group_id = as.numeric(factor(pop, levels = unique(pop))))%>%
+    group_id = as.numeric(factor(pop,levels=c("Mallee","Binya","Nom","Weddin","Zost","Gund","Pill","Mull","Reedy","Moon","Bog","Walch"))))%>%
   arrange(group_id)%>%
   mutate(x_pos = row_number() + (group_id - 1) * 1.5)  # Add space between groups
 #mutate(x_pos = row_number())
@@ -223,7 +230,9 @@ pop_labels <- admix_long %>%
 
 
 custom_colors <- c("blue","lightblue","pink","yellow","purple","maroon",
-                   "red","green","darkgray","black","magenta","brown","darkorange","darkblue","darkgreen")
+                   "red","green","darkgray","black","magenta","darkorange","darkblue","darkgreen")
+
+
 
 ggplot(admix_long, aes(x = x_pos, y = proportion, fill = population)) +
   geom_bar(stat = "identity", width = 0.9) +
@@ -270,7 +279,7 @@ plot = barplot(t(as.matrix(subset(admix.id.sort, select=q1:q3))), col=c("firebri
 admix_data <- admix.id %>%
   arrange(desc(q1)) %>%
   mutate(
-    group_id = as.numeric(factor(pop, levels = unique(pop))))%>%
+    group_id = as.numeric(factor(pop,levels=c("Mallee","Binya","Nom","Weddin","Zost","Gund","Pill","Mull","Reedy","Moon","Bog","Walch"))))%>%
   arrange(group_id)%>%
   mutate(x_pos = row_number() + (group_id - 1) * 1.5)  # Add space between groups
 #mutate(x_pos = row_number())
@@ -300,7 +309,7 @@ pop_labels <- admix_long %>%
 
 
 custom_colors <- c("blue","lightblue","pink","yellow","purple","maroon",
-                   "red","green","darkgray","black","tan","magenta","brown","darkorange","darkblue","darkgreen")
+                   "red","green","darkgray","black","tan","magenta","darkorange","darkblue","darkgreen")
 
 ggplot(admix_long, aes(x = x_pos, y = proportion, fill = population)) +
   geom_bar(stat = "identity", width = 0.9) +
