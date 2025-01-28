@@ -1,0 +1,27 @@
+#!/bin/bash
+#SBATCH -p edwards
+#SBATCH -n 1
+#SBATCH -N 1
+#SBATCH --mem 100G
+#SBATCH -t 3-00:00
+#SBATCH -J bgzip
+#SBATCH -o log/bgzip%A_%a.out
+#SBATCH -e log/bgzip%A_%a.err
+#SBATCH --account=wakeley_lab
+
+
+
+# try vcf_list_test first
+# then run vcf_list with everything else
+
+module load python
+source activate vcftools
+
+#cat vcf_list | while read line
+#do
+#bgzip $line
+#tabix -p vcf $line.gz
+#done
+
+bgzip Nleu_interval_6_1.allsites.partial.vcf
+#tabix -p vcf Nleu_interval_6_1.allsites.partial.vcf.gz
