@@ -9,10 +9,13 @@ library(ggplot2)
 library(dplyr)
 library(ggpubr)
 library(gghalves)
+library(cowplot)
+library(gridExtra)
 setwd("~/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/fst")
 data <- read.table("temperate_arid.pbs.fst.txt",header=F,comment.char = "",skip=1)
 data <- read.table("temperate_arid.pbs.fst_50kb.txt",header=F,comment.char = "",skip=1)
 
+Zdata <- read.table("temperate_arid_neoZ_males.pbs.fst_50kb.txt",header=F,comment.char = "",skip=1)
 
 
 ######################################################################################
@@ -20,6 +23,13 @@ data <- read.table("temperate_arid.pbs.fst_50kb.txt",header=F,comment.char = "",
 data$Chr <- str_replace(data$V2,'scaffold','Chr')
 data$Chr <- str_remove(data$Chr,'_RagTag')
 
+
+Zdata$Chr <- "Neo_Z"
+
+#Zdata$Chr <- str_replace(Zdata$V2,'scaffold','Chr')
+#Zdata$Chr <- str_remove(Zdata$Chr,'_RagTag')
+
+data <- rbind(data,Zdata)
 
 # Create data frame for vertical lines 
 lines_df <- data.frame(
@@ -121,7 +131,7 @@ for(i in seq_len(nrow(intervals_df))) {
 
 
 
-data$Chr <- factor(data$Chr,levels=c("Chr_1","Chr_3","Chr_4","Chr_6","Chr_7","Chr_8",
+data$Chr <- factor(data$Chr,levels=c("Neo_Z","Chr_1","Chr_3","Chr_4","Chr_6","Chr_7","Chr_8",
                                      "Chr_9","Chr_10","Chr_11","Chr_12","Chr_13",
                                      "Chr_14","Chr_15","Chr_16","Chr_17","Chr_18",
                                      "Chr_19","Chr_20","Chr_21","Chr_22","Chr_23",
@@ -135,7 +145,7 @@ data$Chr <- factor(data$Chr,levels=c("Chr_1","Chr_3","Chr_4","Chr_6","Chr_7","Ch
 
 
 
-lines_df$Chr <- factor(lines_df$Chr,levels=c("Chr_1","Chr_3","Chr_4","Chr_6",
+lines_df$Chr <- factor(lines_df$Chr,levels=c("Neo_Z","Chr_1","Chr_3","Chr_4","Chr_6",
                                              "Chr_7","Chr_8","Chr_9","Chr_10",
                                              "Chr_11","Chr_12","Chr_13","Chr_14",
                                              "Chr_15","Chr_16","Chr_17","Chr_18",
@@ -149,7 +159,7 @@ lines_df$Chr <- factor(lines_df$Chr,levels=c("Chr_1","Chr_3","Chr_4","Chr_6",
                                              "pri#ptg000085l","pri#ptg000090l"))
 
 
-intervals_df$Chr <- factor(intervals_df$Chr,levels=c("Chr_1","Chr_3","Chr_4","Chr_6",
+intervals_df$Chr <- factor(intervals_df$Chr,levels=c("Neo_Z","Chr_1","Chr_3","Chr_4","Chr_6",
                                                      "Chr_7","Chr_8","Chr_9","Chr_10",
                                                      "Chr_11","Chr_12","Chr_13","Chr_14",
                                                      "Chr_15","Chr_16","Chr_17","Chr_18",
@@ -164,7 +174,196 @@ intervals_df$Chr <- factor(intervals_df$Chr,levels=c("Chr_1","Chr_3","Chr_4","Ch
 
 
 
-y_top <- max(data$V5, na.rm = TRUE) * 1.1
+y_top <- max(data$V5, na.rm = TRUE) * 1.01
+
+
+# Create dummy legend
+######################################################################################
+# Create a tiny data frame with one row per legend category
+# Example data
+# Ensure segment_type is a factor
+df_legend <- data.frame(
+  x = 1:4,      
+  y = 1:4,      
+  segment_type = factor(c("ancestral Z", "added Z", "new PAR", "PCRs"),
+                        levels = c("ancestral Z", "added Z", "new PAR", "PCRs"))
+)
+
+# Generate the dummy plot to extract the legend
+dummy_legend_plot <- ggplot(df_legend, aes(x, y, fill = segment_type, color = segment_type)) +
+  geom_tile(width = 0.7, height = 0.3, size = 1) +  # Rectangular legend keys
+  scale_fill_manual(
+    name = "Segments",  # Ensure a legend title is set
+    values = c(
+      "ancestral Z" = "black",
+      "added Z"     = "white",
+      "new PAR"     = "#857E13",
+      "PCRs"        = "blue"
+    )
+  ) +
+  scale_color_manual(  
+    name = "Segments",  # Match the name to avoid splitting into two legends
+    values = c(
+      "ancestral Z" = "black",
+      "added Z"     = "black",  # Black outline for white fill
+      "new PAR"     = "#857E13",
+      "PCRs"        = "blue"
+    )
+  ) +
+  guides(
+    fill = guide_legend(
+      override.aes = list(
+        color = c("black", "black", "#857E13", "blue"),  # Black outline for white tile
+        fill  = c("black", "white", "#857E13", "blue"),  # Correct interior colors
+        size  = 3  # Adjust size for better visibility
+      )
+    )
+  ) +
+  theme_void() +
+  theme(legend.position = "top", legend.title = element_blank())
+
+# Check again if the legend exists
+print(dummy_legend_plot)
+
+components <- ggplotGrob(dummy_legend_plot)
+
+# Print all grobs in the plot to see where the legend is
+print(components)
+custom_legend <- gtable::gtable_filter(components, "guide-box-top")
+
+# Print the extracted legend (This is now a gtable, NOT a full ggplot)
+grid::grid.draw(custom_legend)
+
+
+######################################################################################
+# All chromosomes
+
+
+# Plot vlines for neo-Z
+newPAR_vline <- data.frame(Chr = "Neo_Z",xcoord=111.6)
+newPAR_vline$Chr <- as.factor(newPAR_vline$Chr)
+
+# Plot vlines for neo-Z
+addedZ_vline <- data.frame(Chr = "Neo_Z",xcoord=74.4)
+addedZ_vline$Chr <- as.factor(addedZ_vline$Chr)
+
+# Plot intervals for neo-Z
+intervals_neoZ <- data.frame(Chr=c("Neo_Z","Neo_Z","Neo_Z"),start=c(0,74.4,111.6),end=c(74.4,111.6,128.9))
+intervals_neoZ$Chr <- as.factor(intervals_neoZ$Chr)
+
+p <- ggplot(data,aes(V3/1000000,V5,color=in_interval))+
+  geom_point()+
+  geom_segment(data=intervals_df,aes(x=start/1e6,xend=end/1e6),y=y_top,yend=y_top,color='blue',linewidth=2,inherit.aes=FALSE)+
+  geom_segment(data=intervals_neoZ,aes(x=start,xend=end),y=y_top,yend=y_top,color=c('black','white','#857E13'),linewidth=2,inherit.aes=FALSE)+
+ ylim(0,0.8)+
+  xlab("Chromosome position (Mb)")+
+  labs(y = expression(italic(F)[ST]))+
+  facet_wrap(.~Chr,scales="free_x")+
+#  geom_vline(data = newPAR_vline,aes(xintercept = xcoord),color = "red",linewidth = 1,linetype='dotted')+
+#  geom_vline(data = addedZ_vline,aes(xintercept = xcoord),color = "black",linewidth = 1,linetype='dotted')+
+  theme(axis.title = element_text(size=14),
+        axis.text = element_text(size=12),
+        strip.text = element_text(size=13),
+        legend.position="none")+
+  scale_color_manual(values=c("grey","darkblue"))
+
+p
+
+final_plot <- plot_grid(
+  custom_legend,   # Extracted legend
+  p,               # Your main ggplot figure
+  ncol = 1,        # Arrange them vertically
+ rel_heights = c(0.1,1)  # Give more space to the main plot
+)
+
+print(final_plot)
+
+
+ggsave("C:/Users/sophi/Documents/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/figures/Fst_all_chromosomes_neoZ_breakpoints.png", 
+       plot = final_plot, dpi = 350, width = 14, height = 10, units = "in")
+
+######################################################################################
+# box plot of Fst inside and outside inversions and on the neo-Z
+
+table(data$in_interval)
+data$region <- "Autosome-wide"
+data$region[data$in_interval==TRUE]<-"PCRs"
+data$region[data$V2=="scaffold_2_RagTag"]<-"neo-Z"
+table(data$region)
+
+data$region <- factor(data$region,levels=c("neo-Z","Autosome-wide","PCRs"))
+
+# remove the slightly zero observations
+data_filt <- data[data$V5>0,]
+
+p <- ggplot(data_filt,aes(region,V5,group=region))+
+  geom_boxplot(outliers=TRUE)+
+  #ylim(0,1)+
+  xlab("")+
+  labs(y = expression(italic(F)[ST]))+
+  stat_compare_means(aes(group=region),comparisons = list(c("Autosome-wide","PCRs"),c("PCRs","neo-Z"),c("Autosome-wide","neo-Z")), 
+                     method = "t.test",
+                     label = "p.signif") +
+  theme(axis.title = element_text(size=14),
+        axis.text = element_text(size=12),
+        legend.position="none")
+p
+
+
+ggsave("C:/Users/sophi/Documents/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/figures/Fst_autosomes_neoZ_boxplots.png", 
+       plot = p, dpi = 300, width = 6, height = 6, units = "in")
+
+
+
+# run the t.test manually
+t.test(V5 ~ region, data = data_filt[data_filt$region %in% c("Autosome-wide", "neo-Z"), ])
+t.test(V5 ~ region, data = data_filt[data_filt$region %in% c("Autosome-wide", "PCRs"), ])
+t.test(V5 ~ region, data = data_filt[data_filt$region %in% c("neo-Z", "PCRs"), ])
+
+# look at ggplot data
+ggplot_build(p)$data
+
+
+data_filt <- data[data$region!="PCRs",]
+data_filt$region <- droplevels(data_filt$region)
+data_filt <- data_filt[data_filt$V5>0,]
+
+######################################################################################
+# remove the PCRs to look at the difference between Autosome-wide and neo-Z
+p <- ggplot(data_filt,aes(region,V5))+
+  geom_boxplot(outliers=FALSE,notch=TRUE)+
+ # ylim(0,1)+
+  xlab("")+
+  labs(y = expression(italic(F)[ST]))+
+ # stat_compare_means(comparisons = list(c("Autosome-wide", "neo-Z")), 
+#                     method = "t.test",
+#                     label = "p.signif") +
+  theme(axis.title = element_text(size=14),
+        axis.text = element_text(size=12),
+        legend.position="none")
+#  scale_x_discrete(labels = c("TRUE" = "PCRs", "FALSE" = "Autosome-wide"))
+
+p
+t.test(V5 ~ region, data = data_filt[data_filt$region %in% c("Autosome-wide", "neo-Z"), ])
+wilcox.test(V5 ~ region, data = data_filt[data_filt$region %in% c("Autosome-wide", "neo-Z"), ],exact=FALSE)
+
+median(data$V5[data$in_interval==TRUE])
+median(data$V5[data$in_interval==FALSE])
+
+median(data_filt$V5[data_filt$in_interval==TRUE])
+median(data_filt$V5[data_filt$in_interval==FALSE])
+median(data_filt$V5[data_filt$V2=="scaffold_2_RagTag"])
+
+######################################################################################
+# Histogram of Fst inside and outside inversions
+ggplot(data,aes(V5,fill=in_interval,color=in_interval))+
+  geom_histogram(bins=100,alpha=.3,position='identity')+
+  ylab("Count (50 kb windows)")+
+  labs(x = expression(italic(F)[ST]))+
+  theme(axis.title = element_text(size=14),
+        axis.text = element_text(size=12),
+        legend.position="none")
+
 
 
 ######################################################################################
@@ -397,49 +596,52 @@ ggsave("Fst_scaffold_6_breakpoints.svg", plot = p, dpi = 300, width = 10, height
 
 
 
-######################################################################################
-# All chromosomes
 
-ggplot(data,aes(V3/1000000,V5,color=in_interval))+
+##########################################################################################################
+# Fst on the neo-Z
+
+data <- read.table("temperate_arid_neoZ_males.pbs.fst_50kb.txt",header=F,comment.char = "",skip=1)
+
+y_top <- max(data$V5, na.rm = TRUE) * 1.1
+
+data <- data[data$V5>0,]
+
+p <- ggplot(data,aes(V3/1000000,V5))+
   geom_point()+
-  geom_segment(data=intervals_df,aes(x=start/1e6,xend=end/1e6),y=y_top,yend=y_top,color='blue',linewidth=2,inherit.aes=FALSE)+
-  ylim(0,0.8)+
+#  ylim(0,0.8)+
   xlab("Chromosome position (Mb)")+
-  #ylab("Fst")+
   labs(y = expression(italic(F)[ST]))+
-  facet_wrap(.~Chr,scales="free_x")+
- # facet_grid(.~Chr,scales="free_x",space="free_x")+
+  geom_vline(xintercept = 74.4,
+    color = "darkgrey",
+    linewidth = 1,
+    linetype ='dashed')+
+  labs(y = expression(italic(F)[ST]))+
+  geom_vline(xintercept = 111.6,
+             color = "red",
+             linewidth = 1,
+             linetype ='dashed')+
   theme(axis.title = element_text(size=14),
         axis.text = element_text(size=12),
         strip.text = element_text(size=13),
-        legend.position="none")+
-  scale_color_manual(values=c("grey","darkblue"))
-
-######################################################################################
-# box plot of Fst inside and outside inversions
-ggplot(data,aes(in_interval,V5))+
-  geom_boxplot()+
-  ylim(0,1)+
-  xlab("")+
-  labs(y = expression(italic(F)[ST]))+
-  stat_compare_means(comparisons = list(c("TRUE", "FALSE")), 
-                     method = "t.test") +
-  theme(axis.title = element_text(size=14),
-        axis.text = element_text(size=12),
-        legend.position="none")+
-  scale_x_discrete(labels = c("TRUE" = "Inversions", "FALSE" = "Genome-wide"))
-
-######################################################################################
-# Histogram of Fst inside and outside inversions
-ggplot(data,aes(V5,fill=in_interval,color=in_interval))+
-  geom_histogram(bins=100,alpha=.3,position='identity')+
-  ylab("Count (50 kb windows)")+
-  labs(x = expression(italic(F)[ST]))+
-  theme(axis.title = element_text(size=14),
-        axis.text = element_text(size=12),
         legend.position="none")
 
 
+p
 
+# Fst estimates
 
+# ancestral Z
+mean(data$V5[data$V3<74400000])
+median(data$V5[data$V3<74400000])
+
+# added Z
+mean(data$V5[data$V3>74400000 & data$V3 < 111600000])
+median(data$V5[data$V3>74400000 & data$V3 < 111600000])
+
+# new PAR
+mean(data$V5[data$V3 > 111600000])
+median(data$V5[data$V3 > 111600000])
+
+ggsave("C:/Users/sophi/Documents/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/figures/Fst_neoZ_regions_lines.png", 
+       plot = p, dpi = 300, width = 6, height = 6, units = "in")
 

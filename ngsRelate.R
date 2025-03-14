@@ -94,3 +94,37 @@ ggplot(data, aes(x = a, y = b, color = KING, size = KING)) +
    geom_label_repel(data = pairs_to_label, aes(label = names), size = 4, fill = "white", alpha = 0.8) 
 
 
+pairs_to_label$type <-"first_order"
+pairs_to_label$type[pairs_to_label$KING<0.17] <- "second_order"
+
+p<- ggplot(data, aes(KING)) +
+  geom_histogram(alpha = 0.7,bins=40) +
+  labs(title = "", x = "Relatedness (King coefficient)", y = "", color = "Relatedness") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(hjust = 1,size=15),
+        axis.text.y=element_text(size=15),
+        axis.title = element_text(size=16),
+        legend.position = "none")+
+  coord_flip()+
+  geom_label_repel(
+    data = pairs_to_label,
+    aes(x = KING, y = 0, label = names,color=type),  # 'SampleID' or whichever label
+    inherit.aes = FALSE,
+    nudge_y = 120,
+    angle = 90,       # rotate vertical
+    vjust = 1,     # shift text a bit below the axis or above
+    size = 4,
+    direction="x",
+    force=5,
+    box.padding = 0.5,
+    point.padding=0.3,
+    segment.size=1,
+    segment.linetype="dashed")+
+  scale_color_manual(values=c("red","purple"))
+
+
+p
+ggsave("C:/Users/sophi/Documents/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/figures/Supplemental_fig_relatedness_King.png", 
+       plot = p, dpi = 300, width = 8, height = 10, units = "in")
+
+

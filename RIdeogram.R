@@ -177,6 +177,151 @@ ideogram(karyotype = karyotype_df, synteny = synteny_df,output="contig_047.svg")
 convertSVG("contig_047.svg", file="contig_047", device = "png")
 
 
+###################################################################################
+# look at potential inversion on HAP2 contig 000014l
+
+paf_df <- read_paf("hap2_000014l_scaffold_9_names_updated.paf")
+
+
+# Compute midpoints for query and target alignment blocks
+paf_df$query_mid  <- (paf_df$qstart + paf_df$qend) / 2
+paf_df$target_mid <- (paf_df$tstart + paf_df$tend) / 2
+
+paf_df_filt <- paf_df[-c(13:16),]
+
+# Create a basic dot plot with ggplot2
+ggplot(paf_df_filt, aes(x = query_mid/1e6, y = target_mid/1e6, color = strand)) +
+  geom_segment(data=paf_df_filt,aes(x=qstart/1e6,xend=qend/1e6,y=tstart/1e6,yend=tend/1e6))+
+  geom_point(alpha = 0.7) +
+  xlim(0,17.7)+
+  geom_line()+
+  #geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "grey") +
+  labs(x = "Query position (bp)", y = "Target position (bp)", color = "Strand") +
+  theme_minimal()
+
+
+# Create a data frame for the query information
+output_q <- paf_df %>%
+  mutate(
+    Chr = qname,    # Use query name
+    Start = 1,      # Start is fixed at 1
+    End = qlen,     # End is the query length
+    fill = "969696",      # Empty string for fill
+    species = "WEHE",
+    size = 12,      # Set size to 12
+    color = "252525"      # Empty string for color
+  ) %>%
+  select(Chr, Start, End, fill, species, size, color)
+
+# Create a data frame for the target information
+output_t <- paf_df %>%
+  mutate(
+    Chr = tname,    # Use target name
+    Start = 1,      # Start is fixed at 1
+    End = tlen,     # End is the target length
+    fill = "636363",      # Empty string for fill
+    species ="BFHE",
+    size = 12,      # Set size to 12
+    color = "252525"      # Empty string for color
+  ) %>%
+  select(Chr, Start, End, fill, species, size, color)
+
+# Combine the two data frames into one
+karyotype_df <- bind_rows(output_t, output_q) %>%
+  distinct()%>%
+  as.data.frame()
+
+
+paf_df$qname <- as.numeric(as.factor(paf_df$qname))
+paf_df$tname <- as.numeric(as.factor(paf_df$tname))
+
+# Create a data frame for synteny
+synteny_df <- paf_df %>%
+  mutate(
+    Species_1 = tname,    # Use target name
+    Start_1 = tstart,      # Start is fixed at 1
+    End_1 = tend,     # End is the target length
+    Species_2 = qname,      # Empty string for fill
+    Start_2 =qstart,
+    End_2 =qend,      # Set size to 12
+    fill = "cccccc"      # Empty string for color
+  ) %>%
+  select(Species_1, Start_1, End_1,Species_2,Start_2,End_2,fill)%>%
+  as.data.frame()
+
+synteny_df$fill[synteny_df$Start_2<10864590] <- "0000FF"
+
+
+ideogram(karyotype = karyotype_df, synteny = synteny_df,output="hap2_014_inversion.svg")
+convertSVG("hap2_014_inversion.svg", file="hap2_014_inversion", device = "png")
+
+
+
+
+
+###################################################################################
+# look at potential inversion on contig priptg000015l #REFERENCE# REVERSE COMPLEMENTED
+
+paf_df <- read_paf("query15_against_Chr9_RC.paf")
+
+# Create a data frame for the query information
+output_q <- paf_df %>%
+  mutate(
+    Chr = qname,    # Use query name
+    Start = 1,      # Start is fixed at 1
+    End = qlen,     # End is the query length
+    fill = "969696",      # Empty string for fill
+    species = "WEHE",
+    size = 12,      # Set size to 12
+    color = "252525"      # Empty string for color
+  ) %>%
+  select(Chr, Start, End, fill, species, size, color)
+
+# Create a data frame for the target information
+output_t <- paf_df %>%
+  mutate(
+    Chr = tname,    # Use target name
+    Start = 1,      # Start is fixed at 1
+    End = tlen,     # End is the target length
+    fill = "636363",      # Empty string for fill
+    species ="BFHE",
+    size = 12,      # Set size to 12
+    color = "252525"      # Empty string for color
+  ) %>%
+  select(Chr, Start, End, fill, species, size, color)
+
+# Combine the two data frames into one
+karyotype_df <- bind_rows(output_t, output_q) %>%
+  distinct()%>%
+  as.data.frame()
+
+
+paf_df$qname <- as.numeric(as.factor(paf_df$qname))
+paf_df$tname <- as.numeric(as.factor(paf_df$tname))
+
+
+# Create a data frame for synteny
+synteny_df <- paf_df %>%
+  mutate(
+    Species_1 = tname,    # Use target name
+    Start_1 = tstart,      # Start is fixed at 1
+    End_1 = tend,     # End is the target length
+    Species_2 = qname,      # Empty string for fill
+    Start_2 =qstart,
+    End_2 =qend,      # Set size to 12
+    fill = "cccccc"      # Empty string for color
+  ) %>%
+  select(Species_1, Start_1, End_1,Species_2,Start_2,End_2,fill)%>%
+  as.data.frame()
+
+synteny_df$fill[synteny_df$Start_2<11044568] <- "0000FF"
+
+
+ideogram(karyotype = karyotype_df, synteny = synteny_df,output="contig_015_REF_RC_inversion.svg")
+convertSVG("contig_015_RC_inversion.svg", file="contig_015_REF_RC_inversion", device = "png")
+
+
+
 
 ###################################################################################
 # look at potential inversion on contig priptg000015l REVERSE COMPLEMENTED
@@ -246,6 +391,26 @@ convertSVG("contig_015_RC_inversion.svg", file="contig_015_RC_inversion", device
 
 paf_df <- read_paf("scaffold_9_015l.paf")
 
+
+# Compute midpoints for query and target alignment blocks
+paf_df$query_mid  <- (paf_df$qstart + paf_df$qend) / 2
+paf_df$target_mid <- (paf_df$tstart + paf_df$tend) / 2
+
+paf_df_filt <- paf_df[-c(17,19,28:32,34,36),]
+
+# Create a basic dot plot with ggplot2
+ggplot(paf_df_filt, aes(x = query_mid/1e6, y = target_mid/1e6, color = strand)) +
+  geom_point(alpha = 0.7) +
+  geom_segment(data=paf_df_filt,aes(x=qstart/1e6,xend=qend/1e6,y=tstart/1e6,yend=tend/1e6))+
+  ylim(0,36)+
+  xlim(0,17.7)+
+  geom_line()+
+ # geom_abline(slope = 1, intercept = 0, linetype = "dashed", color = "grey") +
+  labs(x = "Query position (bp)", y = "Target position (bp)", color = "Strand") +
+  theme_minimal()
+
+
+
 # Create a data frame for the query information
 output_q <- paf_df %>%
   mutate(
@@ -306,11 +471,11 @@ synteny_df <- paf_df %>%
 synteny_df$fill[synteny_df$Start_2>6664979] <- "0000FF"
 #synteny_df$Start_1[synteny_df$Start_2>6964979] <- "0000FF"
 
-synteny_df$Start_new <- synteny_df$End_1
-synteny_df$End_new <- synteny_df$Start_1
+synteny_df$Start_new <- synteny_df$End_2
+synteny_df$End_new <- synteny_df$Start_2
 
-synteny_df$Start_1 <- synteny_df$Start_new
-synteny_df$End_1 <- synteny_df$End_new
+synteny_df$Start_2 <- synteny_df$Start_new
+synteny_df$End_2 <- synteny_df$End_new
 #
 
 synteny_df <- select(synteny_df, -Start_new, -End_new)
