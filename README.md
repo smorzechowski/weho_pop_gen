@@ -60,6 +60,10 @@ My config.yaml file for the snakemake pipeline is here:
 
 ```
 
+Hifiasm is able to produce two haplotype assemblies (hap1 and hap2) as well as a primary haploid assembly that collapses the bubbles in the graph. Since I am not doing pangenome analysis, I can use the primary assembly to map my short reads to for population genomic analyses. However, it is often necessary to manually curate the sex chromosomes, especially in a species like White-eared Honeyeater, which contains neo-sex chromosomes. I found that the primary assembly did not contain the full phased sequence for the neo-Z or neo-W because the primary assembly algorithm incorrectly purged haplotigs that it thought were redundant but were actually minimally diverged regions of the neo-sex chromosomes. For instance, it purged the contig(s) containing the new PAR because it is not diverged at all between the neo-sex chromosomes, however it also purged regions where recombination suppression has occurred, leading to divergence between the Z and W gametologs. 
+
+To make sure that all W-linked and Z-linked contigs were included in the final assembly, I had to identify the Z and W linked contigs in all assemblies with a combination of sex differences in coverage and synteny analysis.  
+
 ## Adapter trimming and read mapping
 
 I used trimgalore to trim adapters from the Illumina short reads I generated for 72 individuals of White-eared Honeyeaters. 
