@@ -51,6 +51,14 @@ The software and programs used in this project include:
 
 ## Genome assembly and curation
 
+I generated HiFi PacBio reads on a Revio SMRTCELL from a female White-eared Honeyeater to create a long-read reference genome with both the neo-Z and neo-W sex chromosomes. I used Heng Li's program `hifiasm` to conduct *de novo* assembly of the HiFi reads. I adapted a snakemake pipeline from Danielle Khost of the Harvard Informatics group (https://github.com/harvardinformatics/pacbio_hifi_assembly).
+
+My config.yaml file for the snakemake pipeline is here:
+
+```
+
+
+```
 
 ## Adapter trimming and read mapping
 
