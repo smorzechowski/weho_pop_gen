@@ -205,7 +205,26 @@ mkdir $DIR
 $RepeatMaskerPath/RepeatMasker -pa 8 -e ncbi -xsmall -lib $RepeatModeler_library -dir $DIR $Genome
 ```
 
-Then I also uploaded the genome to NCBIm, which runs contamination screening on the genome to see if adapter contamination or sequences from foreign organisms are present. 
+Then, I used RagTag to scaffold the contigs into chromosomes based on the Blue-faced Honeyeater, which is the most closely related species of honeyeater with a HiC-scaffolded genome that I produced for a different manuscript.
+
+```
+# Scaffold Nleucotis manually-curated softmasked assembly to Blue-faced Honeyeater HiC scaffolded assembly
+#query='/n/holylfs04/LABS/edwards_lab/Lab/smorzechowski/meliphagid/ReferenceAssemblies/Nleucotis_hifi_v1.0_headclean_softmasked_fcs_fx.fasta'
+#ref='/n/holylfs04/LABS/edwards_lab/Lab/smorzechowski/meliphagid/ReferenceAssemblies/Ecyan_HiC_v3.0.fa'
+#outdir='ref_Ecyan_HiC_v3.0_query_Nleu_v1.0'
+#species='Nleu'
+
+module load python
+source activate ragtag
+
+ref=$1
+query=$2
+out=$3
+
+ragtag.py scaffold -t 6 $ref $query -r -o $out
+```
+
+Then, I also uploaded the genome to NCBI, which runs contamination screening on the genome to see if adapter contamination or sequences from foreign organisms are present. 
 
 I also hardmasked the new PAR on the neo-W to avoid mapping issues which occur when reads map to multiple identical sequences in a genome. 
 
