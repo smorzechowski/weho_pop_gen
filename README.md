@@ -6,6 +6,8 @@ The software and programs used in this project include:
 
 - [hifiasm](https://github.com/chhylp123/hifiasm)
 - [findZX](https://github.com/hsigeman/findZX)
+- [RepeatModeler](https://github.com/Dfam-consortium/RepeatModeler/tree/master)
+- [RepeatMasker](https://github.com/Dfam-consortium/RepeatMasker)
 - [trimgalore](https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/)
   - FastQC
 - [BWA (v.7.17)](https://bio-bwa.sourceforge.net/bwa.shtml)
@@ -18,8 +20,6 @@ The software and programs used in this project include:
 - [vcftools](https://vcftools.github.io/index.html)
 - [bcftools](https://samtools.github.io/bcftools/bcftools.html)
 - [qualimap](http://qualimap.conesalab.org/)
-- [RepeatModeler](https://github.com/Dfam-consortium/RepeatModeler/tree/master)
-- [RepeatMasker](https://github.com/Dfam-consortium/RepeatMasker)
 - [R (v4.3.2)](https://www.r-project.org/)
 
 
@@ -57,7 +57,26 @@ I generated HiFi PacBio reads on a Revio SMRTCELL from a female White-eared Hone
 My config.yaml file for the snakemake pipeline is here:
 
 ```
+##############################
+# Variables you need to change
+##############################
 
+sample: "nleucotis_yamma_366917_f"  #Name of the sample to act as base name
+reads: "/n/holylfs04/LABS/edwards_lab/Lab/smorzechowski/meliphagid/HiFi_data/1_D01/hifi_reads/m84147_240713_010125_s4.hifi_reads.bam" #List of BAM files output from sequencer (include full path). If multiple files, separate by SPACES
+
+#Hifiasm options
+use_hiC: "false"  #Indicate whether using HiC data to aid in with assembly (note, NOT the same as HiC scaffolding!)
+hiC_read1: " "  #If using HiC, include path to first set of reads in pair
+hiC_read2: " "  ##If using HiC, include path to second set of reads in pair
+
+#Optional (ultra-long) Nanopore integration
+use_ont: "false" #Indicate whether have nanopore data
+ont_reads: " " #If using Nanopore, add path to COMBINED reads as a fastq file (opt. gzipped fastq)
+
+#Variables you DON'T need to change:
+#Output naming:
+hifi_outdir: "results/hifiasm_output_RAW"
+assem_outdir: "results/assembly"
 
 ```
 
@@ -158,6 +177,12 @@ ggplot(coverage_neoZ,aes(contig,log2FM))+
   geom_boxplot()
 
 ```
+
+Next, I wanted to softmask the repetitive content of the genome to speed up alignment of short reads. Repetitive regions make alignment very difficult and aligners can get stuck in computational black holes trying to align very repetitive short reads to repetitive genome regions that are identical in hundreds or thousands of places across the genome. Variant calling from short reads in repetitive regions is basically hopeless (although I should note that pangenomes allow much better characterization of structural and sequence variants in repetitive regions), thus it is best to focus on the non-repetitive portion of the genome where we can be more confident about the variants we call.
+
+I created a *de novo* repeat library of the White-eared Honeyeater with RepeatModeler.
+
+Then I soft masked all repetitive regions using RepeatMasker. 
 
 
 ## Adapter trimming and read mapping
