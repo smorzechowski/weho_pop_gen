@@ -59,8 +59,8 @@ source activate cutadapt
 # this env includes fastqc as well
 
 
-# $1 = R1 reads
-# $2 = R2 reads
+# $1 = R1 forward reads
+# $2 = R2 reverse reads
 
 TRIMGALORE="/n/home09/smorzechowski/bin/TrimGalore-0.6.6/trim_galore"
 
@@ -73,7 +73,7 @@ TRIMGALORE="/n/home09/smorzechowski/bin/TrimGalore-0.6.6/trim_galore"
 $TRIMGALORE --quality 20 --phred33 --fastqc --paired --output_dir trimmed_reads_all_qual --length 36 --stringency 3 -e 0.1 $1 $2
 ```
 
-To run trimgalore on many individuals, I created a trimgalore.runscript using sed/awk to submit each trimgalore job to SLURM
+To run trimgalore on many individuals, I created a trimgalore.runscript using sed/awk to submit each trimgalore job to SLURM.
 See trimgalore.runscript in files. The runscript is a bash script that calls the jobscript and provides filepath to each forward and reverse fastq file.
 
 For example:
@@ -83,5 +83,13 @@ For example:
 sbatch trimgalore.jobscript data/P536_SOrze_A01v1_Nom_093_F_S1_L003_R1_001.fastq.gz data/P536_SOrze_A01v1_Nom_093_F_S1_L003_R2_001.fastq.gz
 sbatch trimgalore.jobscript data/P536_SOrze_A01v1_Nom_093_F_S1_L004_R1_001.fastq.gz data/P536_SOrze_A01v1_Nom_093_F_S1_L004_R2_001.fastq.gz
 ```
+
+To map (i.e. align) the trimmed reads to the reference genome, I used BWA to create `.bam` alignment files. 
+
+```
+
+
+```
+
 
 
