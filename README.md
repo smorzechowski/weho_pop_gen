@@ -4,6 +4,7 @@ This readme provides an overview of the genomic analyses conducted in this proje
 
 The software and programs used in this project include:
 
+- [hifiasm](https://github.com/chhylp123/hifiasm)
 - [trimgalore](https://www.bioinformatics.babraham.ac.uk/projects/trim_galore/)
   - FastQC
 - [BWA (v.7.17)](https://bio-bwa.sourceforge.net/bwa.shtml)
@@ -23,6 +24,7 @@ The software and programs used in this project include:
 
 # Contents
 - [Order of opererations for each pipeline](#order-of-operations-for-each-pipeline)
+- [Genome assembly and curation](#genome-assembly-and-curation)
 - [Adapter trimming and read mapping](#adapter-trimming-and-read-mapping)
 
 
@@ -45,6 +47,9 @@ The software and programs used in this project include:
 2. bwa_sort.jobscript
 3. merge_dedup_clip.jobscript
 4. indel_realign.jobscript
+
+
+## Genome assembly and curation
 
 
 ## Adapter trimming and read mapping
