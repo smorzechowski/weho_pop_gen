@@ -86,7 +86,8 @@ To make sure that all W-linked and Z-linked contigs were included in the final a
 
 I ran findZX to conduct a synteny analysis between White-eared Honeyeater and Blue-faced Honeyeater and estimate coverage of the short reads I aligned across the genome from one male and one female. See the R scripts `classify_contigs_cyan_synteny_hap1.R`, `classify_contigs_cyan_cynteny_hap2.R` and `classify_contigs_tgut_synteny_primary.R` in files. 
 
-Here is an example of how I used the findZX output to find contigs in the White-eared Honeyeater genome that were homologous to the neo-Z (`scaffold_2`) of the Blue-faced Honeyeater genome.
+Here is an example of how I used the findZX output to find contigs in the White-eared Honeyeater genome that were homologous to the neo-Z (`scaffold_2`) of the Blue-faced Honeyeater genome:
+
 ```
 setwd("~/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE assembly/findZX/Nesoptilotis_hap2")
 
@@ -117,7 +118,7 @@ matches_neoZ_final <- matches_neoZ_summary[matches_neoZ_summary$windowsum>35000,
 matches_neoZ_final <- matches_neoZ_summary[matches_neoZ_summary$percent_match>0.10,]
 ```
 
-And here is an example for the neo-W contigs
+And here is an example for the neo-W contigs:
 
 ```
 # Curate a list of contigs that are homologous to neo-W in Blue-faced Honeyeater
@@ -181,7 +182,7 @@ ggplot(coverage_neoZ,aes(contig,log2FM))+
 Next, I wanted to softmask the repetitive content of the genome to speed up alignment of short reads. Repetitive regions make alignment very difficult and aligners can get stuck in computational black holes trying to align very repetitive short reads to repetitive genome regions that are identical in hundreds or thousands of places across the genome. Variant calling from short reads in repetitive regions is basically hopeless (although I should note that pangenomes allow much better characterization of structural and sequence variants in repetitive regions), thus it is best to focus on the non-repetitive portion of the genome where we can be more confident about the variants we call.
 
 
-I created a *de novo* repeat library of the White-eared Honeyeater with RepeatModeler.
+I created a *de novo* repeat library of the White-eared Honeyeater with RepeatModeler:
 
 ```
 RepeatModeler='/n/home09/smorzechowski/bin/RepeatModeler-2.0.2a' 
@@ -190,7 +191,7 @@ RepeatModeler='/n/home09/smorzechowski/bin/RepeatModeler-2.0.2a'
 $RepeatModeler/RepeatModeler -pa 12 -engine ncbi -database Nleucotis_hifi_v1.0 2>&1 | tee repeatmodeler.log
 ```
 
-Then I soft masked all repetitive regions using RepeatMasker, supplying the custom RepeatModeler library.
+Then I softmasked all repetitive regions using RepeatMasker, supplying the custom RepeatModeler library:
 
 ```
 RepeatModeler_library=$1
@@ -205,7 +206,7 @@ mkdir $DIR
 $RepeatMaskerPath/RepeatMasker -pa 8 -e ncbi -xsmall -lib $RepeatModeler_library -dir $DIR $Genome
 ```
 
-Then, I used RagTag to scaffold the contigs into chromosomes based on the Blue-faced Honeyeater, which is the most closely related species of honeyeater with a HiC-scaffolded genome that I produced for a different manuscript.
+Then, I used RagTag to scaffold the contigs into chromosomes based on the Blue-faced Honeyeater, which is the most closely related species of honeyeater with a HiC-scaffolded genome that I produced for a different manuscript:
 
 ```
 # Scaffold Nleucotis manually-curated softmasked assembly to Blue-faced Honeyeater HiC scaffolded assembly
@@ -226,7 +227,7 @@ ragtag.py scaffold -t 6 $ref $query -r -o $out
 
 Then, I also uploaded the genome to NCBI, which runs contamination screening on the genome to see if adapter contamination or sequences from foreign organisms are present. 
 
-I also hardmasked the new PAR on the neo-W to avoid mapping issues which occur when reads map to multiple identical sequences in a genome. 
+I also hardmasked the new PAR on the neo-W to avoid mapping issues which occur when reads map to multiple identical sequences in a genome:
 
 ```
 # interval information
@@ -248,6 +249,7 @@ bedtools maskfasta -fi $MEL/ReferenceAssemblies/Nleucotis_hifi_v1.0_hc_sm_fx_sca
 
 ```
 The final genome assembly I used in all sequences was: 
+
 `Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded_PAR_masked.fasta`
 
 ## Adapter trimming and read mapping
@@ -333,6 +335,7 @@ Finally, I call BWA and pipe the output to `samtools` to create a `.bam` alignme
 - LIBPREP (from Bauer Core sequencing records)
 
 The 'read group' metadata information gets associated with the mapped reads and is useful in a variety of contexts. For example, if you have reads that were sequenced on different lanes or with different library preps, it's important to identify which reads came from which lane to avoid technical artifacts that might occur if you combine all reads together without properly attributing what lane or library prep they came from.  
+
 ```
 #Check output directories exist & create them as needed
 [ -d $RAW_DIR ] || mkdir -p $RAW_DIR
@@ -351,14 +354,14 @@ $BWA_PATH/bwa mem $INDEXBASE $FASTQ1 $FASTQ2 -t $CPU -M -R $(echo "@RG\tID:$FLOW
  | samtools sort -@ $CPU --output-fmt BAM -o $RAW_DIR/${SAMPLE}_${LANE}_bwa_sort.bam
 ```
 
-Finally I validate the bam files with PICARD to make sure that they are complete, not corrupted, formatted correctly. 
+Finally I validate the bam files with PICARD to make sure that they are complete, not corrupted, formatted correctly:
+
 ```
 # validate the bam files
 java -Xmx30G \
 -jar $PICARD ValidateSamFile \
       I=$RAW_DIR/${SAMPLE}_${LANE}_bwa_sort.bam \
       MODE=SUMMARY
-
 ```
 
 
