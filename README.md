@@ -24,7 +24,7 @@ The software and programs used in this project include:
 
 
 # Contents
-- [Order of opererations for each pipeline](#order-of-operations-for-each-pipeline)
+- [Order of operations for each pipeline](#order-of-operations-for-each-pipeline)
 - [Genome assembly and curation](#genome-assembly-and-curation)
 - [Adapter trimming and read mapping](#adapter-trimming-and-read-mapping)
 
@@ -66,6 +66,99 @@ Hifiasm is able to produce two haplotype assemblies (hap1 and hap2) as well as a
 To make sure that all W-linked and Z-linked contigs were included in the final assembly, I had to identify the Z and W linked contigs in all assemblies with a combination of sex differences in coverage and synteny analysis.
 
 I ran findZX to conduct a synteny analysis between White-eared Honeyeater and Blue-faced Honeyeater and estimate coverage of the short reads I aligned across the genome from one male and one female. See the R scripts `classify_contigs_cyan_synteny_hap1.R`, `classify_contigs_cyan_cynteny_hap2.R` and `classify_contigs_tgut_synteny_primary.R` in files. 
+
+Here is an example of how I used the findZX output to find contigs in the White-eared Honeyeater genome that were homologous to the neo-Z (`scaffold_2`) of the Blue-faced Honeyeater genome.
+```
+setwd("~/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE assembly/findZX/Nesoptilotis_hap2")
+
+# get list of autosomal contigs to estimate median depth for each sex
+# https://stackoverflow.com/questions/67192258/cant-read-txt-in-r-with-hash-tag-in-the-txt-file
+
+lengths <- read.table("coverage/nleucotis_yamma_366917_f.hap2.p_ctg.filter.10000.fasta.fai",header=F,sep="\t",comment.char="")
+matches <- read.table("synteny_lastal/E_cyanotis/bestMatch.list",header=F,sep="\t",comment.char = "")
+
+
+# Curate a list of contigs that are homologous to neo-Z in Blue-faced Honeyeater
+
+matches_neoZ <- matches[matches$V8=="scaffold_2",]
+matches_neoZ$window_hits <- matches_neoZ$V3 - matches_neoZ$V2
+matches_neoZ_order <- matches_neoZ[order(matches_neoZ$V1),]
+matches_neoZ_order_nondup <- matches_neoZ_order[!duplicated(matches_neoZ_order$V1),]
+
+matches_neoZ_summary <- matches_neoZ %>% select(V1,window_hits) %>%
+  group_by(V1) %>%
+  summarize(windowsum = sum(window_hits,na.rm=TRUE))%>%
+  as.data.frame()
+
+matches_neoZ_summary <- left_join(matches_neoZ_summary,lengths)
+matches_neoZ_summary$percent_match <- matches_neoZ_summary$windowsum/matches_neoZ_summary$V2
+
+# Designate a threshold for number of windows with hits, or percentage match
+matches_neoZ_final <- matches_neoZ_summary[matches_neoZ_summary$windowsum>35000,]
+matches_neoZ_final <- matches_neoZ_summary[matches_neoZ_summary$percent_match>0.10,]
+```
+
+And here is an example for the neo-W contigs
+
+```
+# Curate a list of contigs that are homologous to neo-W in Blue-faced Honeyeater
+
+matches_neoW <- matches[matches$V8=="scaffold_5",]
+matches_neoW$window_hits <- matches_neoW$V3 - matches_neoW$V2
+matches_neoW_order <- matches_neoW[order(matches_neoW$V1),]
+matches_neoW_order_nondup <- matches_neoW_order[!duplicated(matches_neoW_order$V1),]
+
+
+matches_neoW_summary <- matches_neoW %>% select(V1,window_hits) %>%
+  group_by(V1) %>%
+  summarize(windowsum = sum(window_hits,na.rm=TRUE))%>%
+  as.data.frame()
+
+matches_neoW_summary <- left_join(matches_neoW_summary,lengths)
+matches_neoW_summary$percent_match <- matches_neoW_summary$windowsum/matches_neoW_summary$V2
+# Designate a threshold for number of windows with hits or percent match
+matches_neoW_final <- matches_neoW_summary[matches_neoW_summary$windowsum>10000,]
+matches_neoW_final <- matches_neoW_summary[matches_neoW_summary$percent_match>0.10,]
+```
+
+Next, I used the FindZX coverage data for the male and female individual I mapped to the White-eared Honeyeater assemblies (hap1, hap2, primary) to estimate the metric `log2FM` following Schield et al. 2022 (Schield DR, Perry BW, Card DC, Pasquesi GIM, Westfall AK, Mackessy SP, Castoe TA. 2022. The Rattlesnake W Chromosome: A GC-Rich Retroelement Refugium with Retained Gene Function Across Ancient Evolutionary Strata. Genome Biol. Evol. 14:evac116.)
+
+Here's an example:
+
+```
+##### Estimate coverage for each genomic compartment
+
+coverage <- read.table("coverage/gencov.mismatch.0.0.out",header=F,sep="\t",comment.char = "")
+
+# Calculate median depth for selected 20 autosomes for each sex
+
+auto_coverage <- coverage[coverage$V1%in%matches_auto_order_nondup$V1,]
+
+# females
+median_sampleV4 <- median(auto_coverage$V4)
+
+# males
+median_sampleV5 <- median(auto_coverage$V5)
+
+# calculate log2FM following Schield et al. 2022
+
+coverage$Fnorm <- coverage$V4/median_sampleV4
+coverage$Mnorm <- coverage$V5/median_sampleV5
+
+coverage$log2FM <- log2(coverage$Fnorm/coverage$Mnorm)
+
+#### neo-Z coverage calculations ####
+
+# Subset coverage based on window hits to neo-Z
+coverage_neoZ <- coverage[coverage$V1%in%matches_neoZ_final$V1,]
+coverage_neoZ$contig <- str_remove_all(coverage_neoZ$V1,"nleucotis_yamma_366917_f.hap2#pri#")
+
+
+ggplot(coverage_neoZ,aes(contig,log2FM))+
+  geom_boxplot()
+
+```
+
 
 ## Adapter trimming and read mapping
 
