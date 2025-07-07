@@ -180,10 +180,56 @@ ggplot(coverage_neoZ,aes(contig,log2FM))+
 
 Next, I wanted to softmask the repetitive content of the genome to speed up alignment of short reads. Repetitive regions make alignment very difficult and aligners can get stuck in computational black holes trying to align very repetitive short reads to repetitive genome regions that are identical in hundreds or thousands of places across the genome. Variant calling from short reads in repetitive regions is basically hopeless (although I should note that pangenomes allow much better characterization of structural and sequence variants in repetitive regions), thus it is best to focus on the non-repetitive portion of the genome where we can be more confident about the variants we call.
 
+
 I created a *de novo* repeat library of the White-eared Honeyeater with RepeatModeler.
 
-Then I soft masked all repetitive regions using RepeatMasker. 
+```
+RepeatModeler='/n/home09/smorzechowski/bin/RepeatModeler-2.0.2a' 
 
+# $RepeatModeler/BuildDatabase -name Nleucotis_hifi_v1.0 -engine ncbi $assembly 
+$RepeatModeler/RepeatModeler -pa 12 -engine ncbi -database Nleucotis_hifi_v1.0 2>&1 | tee repeatmodeler.log
+```
+
+Then I soft masked all repetitive regions using RepeatMasker, supplying the custom RepeatModeler library.
+
+```
+RepeatModeler_library=$1
+Genome=$2
+DIR=$3
+
+export PERL5LIB=/
+
+RepeatMaskerPath='/n/home09/smorzechowski/bin/RepeatMasker'
+# softmask = xsmall
+mkdir $DIR
+$RepeatMaskerPath/RepeatMasker -pa 8 -e ncbi -xsmall -lib $RepeatModeler_library -dir $DIR $Genome
+```
+
+Then I also uploaded the genome to NCBIm, which runs contamination screening on the genome to see if adapter contamination or sequences from foreign organisms are present. 
+
+I also hardmasked the new PAR on the neo-W to avoid mapping issues which occur when reads map to multiple identical sequences in a genome. 
+
+```
+# interval information
+scaffold_5_RagTag 0 26782956 # added W
+scaffold_5_RagTag 26782957 32320175 # ancestral W
+scaffold_5_RagTag 32320176 55423182 # added W
+scaffold_5_RagTag 55423183 73135152 # ancestral W  
+scaffold_5_RagTag 73135153 90514351 # new PAR -- WHICH SHOULD BE HARDMASKED!!!!!
+Size of the newPAR based on scaffold_5 = 17,379,198 bp
+
+newPAR.bed
+scaffold_5_RagTag 73135153 90514351
+
+mamba activate bedtools
+
+# by default, hard masking is done 
+bedtools maskfasta -fi $MEL/ReferenceAssemblies/Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded.fasta -bed newPAR.bed -fo Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded_PAR_masked.fasta
+
+
+```
+The final genome assembly I used in all sequences was: 
+`Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded_PAR_masked.fasta`
 
 ## Adapter trimming and read mapping
 
