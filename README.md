@@ -50,8 +50,33 @@ The software and programs used in this project include:
 ## Adapter trimming and read mapping
 
 I used trimgalore to trim adapters from the Illumina short reads I generated for 72 individuals of White-eared Honeyeaters. 
+See trimgalore.jobscript in files. 
 
+```
+module purge
+module load python
+source activate cutadapt
+# this env includes fastqc as well
+
+
+# $1 = R1 reads
+# $2 = R2 reads
+
+TRIMGALORE="/n/home09/smorzechowski/bin/TrimGalore-0.6.6/trim_galore"
+
+# SEE OPTIONS $TRIMGALORE --help
+
+# remove retained_unpaired, length=36 for paired
+# set quality to 0 to include all base qualities, which ANGSD can handle and filter
+# removing bases with quality less than 20 is standard for GATK and other variant callers
+
+$TRIMGALORE --quality 20 --phred33 --fastqc --paired --output_dir trimmed_reads_all_qual --length 36 --stringency 3 -e 0.1 $1 $2
+```
+
+To run trimgalore on many individuals, I created a trimgalore.runscript using sed/awk to submit each trimgalore job to SLURM
+See trimgalore.runscript in files.
+
+```
 ```
 
 
-```
