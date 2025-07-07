@@ -119,9 +119,17 @@ BWA_PATH='/n/home09/smorzechowski/bin/bwa'
 #BWA_PATH='/n/home09/smorzechowski/bin/bwa-mem2-2.2.1_x64-linux'
 ```
 
-Next I check for directories I defined above and create them if they don't already exist. I also create the bwa index for the reference genome if it doesn't already exist.
+Next I check for directories I defined above and create them if they don't already exist. I also create the `bwa index` files for the reference genome if they don't already exist. Index files help BWA navigate and align short reads to the reference genome more efficiently.
 
-Finally, I call BWA and pipe the output to samtools to create a bam alignment file as BWA runs. `.bam` files are much more compact and this is best practice to automatically convert to `.bam` rather than `.sam` which are very unwieldy. 
+Finally, I call BWA and pipe the output to `samtools` to create a `.bam` alignment file as BWA runs. It is best practice to automatically convert to `.bam` format rather than creating intermediate `.sam` files, which are very large and unwieldy. This BWA command also adds read group information defined in the input parameters above. It is important to include read group metadata such as: 
+- FLOWCELL (from fastq file)
+- LANE (from fastq file or your sequencing records)
+- FLOWCELL_BARCODE (from fastq file)
+- SAMPLE (from your sequencing records)
+- PLATFORM (e.g. Illumina, PacBio, Oxford Nanopore)
+- LIBPREP (from Bauer Core sequencing records)
+
+The 'read group' metadata information gets associated with the mapped reads and is useful in a variety of contexts. For example, if you have reads that were sequenced on different lanes or with different library preps, it's important to identify which reads came from which lane to avoid technical artifacts that might occur if you combine all reads together without properly attributing what lane or library prep they came from.  
 ```
 #Check output directories exist & create them as needed
 [ -d $RAW_DIR ] || mkdir -p $RAW_DIR
