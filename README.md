@@ -86,8 +86,67 @@ sbatch trimgalore.jobscript data/P536_SOrze_A01v1_Nom_093_F_S1_L004_R1_001.fastq
 
 To map (i.e. align) the trimmed reads to the reference genome, I used BWA to create `.bam` alignment files. 
 
+First I define input parameters
+```
+# Input parameters
+RAW_DIR='/n/holyscratch01/edwards_lab/smorzechowski/meliphagid/analysis/2024-08-12/12-bwa/raw'
+GENOME='/n/holylfs04/LABS/edwards_lab/Lab/smorzechowski/meliphagid/ReferenceAssemblies/Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded_PAR_masked.fasta'
+INDEXBASE='Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded_PAR_masked'
+FASTQ1=$1
+FASTQ2=$2
+CPU=16
+FLOWCELL='LH00541'
+LANE=$3
+FLOWCELL_BARCODE='22KV7YLT3'
+SAMPLE=$4
+PLATFORM='Illumina'
+LIBPREP='P536'
 ```
 
+Next I activate my mamba environment for samtools and define filepaths for where I installed PICARD, BWA, and saved the perl script for getting alignment statistics.
+```
+module purge
+module load python
+source activate samtools
+#source activate BamUtil
+
+module load jdk/20.0.1-fasrc01
+
+PICARD='/n/home09/smorzechowski/bin/picard/build/libs/picard.jar'
+# this comes from ArimaGenomics mapping_pipeline
+STATS='/n/home09/smorzechowski/bin/get_stats.pl'
+BWA_PATH='/n/home09/smorzechowski/bin/bwa'
+#BWA_PATH='/n/home09/smorzechowski/bin/bwa-mem2-2.2.1_x64-linux'
+```
+
+Next I check for directories I defined above and create them if they don't already exist. I also create the bwa index for the reference genome if it doesn't already exist.
+
+Finally, I call BWA and pipe the output to samtools to create a bam alignment file as BWA runs. `.bam` files are much more compact and this is best practice to automatically convert to `.bam` rather than `.sam` which are very unwieldy. 
+```
+#Check output directories exist & create them as needed
+[ -d $RAW_DIR ] || mkdir -p $RAW_DIR
+
+
+# create bwa index if necessary - only do this once
+[ -f ${INDEXBASE}.sa ] || $BWA_PATH/bwa index -p $INDEXBASE $GENOME
+
+# call bwa and convert to bam, directly sort
+# https://www.biostars.org/p/319730/
+# -M : "mark shorter split hits as secondary
+# -R : Read group information
+# '@RG\tID:$ID\tSM:$SM\tLB:$LB\tPU:$PU\tPL:$PL'
+
+$BWA_PATH/bwa mem $INDEXBASE $FASTQ1 $FASTQ2 -t $CPU -M -R $(echo "@RG\tID:$FLOWCELL"_"$LANE\tSM:$SAMPLE\tLB:$LIBPREP\tPU:$FLOWCELL_BARCODE"_"$LANE"_"$SAMPLE\tPL:$PLATFORM") \
+ | samtools sort -@ $CPU --output-fmt BAM -o $RAW_DIR/${SAMPLE}_${LANE}_bwa_sort.bam
+```
+
+Finally I validate the bam files with PICARD to make sure that they are complete, not corrupted, formatted correctly. 
+```
+# validate the bam files
+java -Xmx30G \
+-jar $PICARD ValidateSamFile \
+      I=$RAW_DIR/${SAMPLE}_${LANE}_bwa_sort.bam \
+      MODE=SUMMARY
 
 ```
 
