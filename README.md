@@ -1,6 +1,6 @@
 # Scripts associated with a population genomic analysis of White-eared Honeyeaters (*Nesoptilotis leucotis*)
 
-This readme provides an overview of the genomic analyses conducted in this project. I primarily ran the ANGSD pipeline for variant calling because I sequenced 72 individuals at an average depth of 6x coverage, which is in the low-to-mid coverage range. Howevever, I include the manual GATK pipeline I ran as well.  
+This readme provides an overview of the genomic analyses conducted in this project. I primarily ran the ANGSD pipeline for variant calling because I sequenced 72 individuals at an average depth of 6x coverage, which is in the low-to-mid coverage range better suited for the genotype likelihood framework of ANGSD. Howevever, I include the manual GATK pipeline for hard calling variants as well.  
 
 The software and programs used in this project include:
 
@@ -48,3 +48,10 @@ The software and programs used in this project include:
 
 
 ## Adapter trimming and read mapping
+
+I used trimgalore to trim adapters from the Illumina short reads I generated for 72 individuals of White-eared Honeyeaters. 
+
+```
+
+
+```
