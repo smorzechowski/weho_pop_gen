@@ -89,7 +89,7 @@ sbatch X.jobscript $input1 $input2 $input3
 
 ## Genome assembly and curation
 
-I generated HiFi PacBio reads on a Revio SMRTCELL from a female White-eared Honeyeater to create a long-read reference genome with both the neo-Z and neo-W sex chromosomes. I used Heng Li's program `hifiasm` to conduct *de novo* assembly of the HiFi reads. I adapted a snakemake pipeline from Danielle Khost of the Harvard Informatics group (https://github.com/harvardinformatics/pacbio_hifi_assembly).
+I generated HiFi PacBio reads on a Revio SMRT Cell from a female White-eared Honeyeater to create a long-read reference genome containing both the neo-Z and neo-W sex chromosomes. I used Heng Li's fantastic assembler `hifiasm` to conduct *de novo* diploid assembly of the HiFi reads. I used a handy snakemake pipeline from Danielle Khost of the Harvard Informatics group (https://github.com/harvardinformatics/pacbio_hifi_assembly) to run `hifiasm` on the cluster. 
 
 My config.yaml file for the snakemake pipeline is here:
 
@@ -117,9 +117,9 @@ assem_outdir: "results/assembly"
 
 ```
 
-Hifiasm is able to produce two haplotype assemblies (hap1 and hap2) as well as a primary haploid assembly that collapses the bubbles in the graph. Since I am not doing pangenome analysis, I can use the primary assembly to do short read alignment for variant calling. However, it is often necessary to manually curate the sex chromosomes, especially in a species like White-eared Honeyeater, which contains neo-sex chromosomes. I found that the primary assembly did not contain the full phased sequence for the neo-Z or neo-W because the primary assembly algorithm incorrectly purged haplotigs that it characterized as redundant but were actually minimally diverged regions of the neo-sex chromosomes. For instance, it purged the contig(s) containing the new PAR because it is not diverged at all between the neo-sex chromosomes, however it also purged regions where recombination suppression has occurred on the neo-W, leading to divergence between the Z and W gametologs. 
+Hifiasm is able to produce two haplotype assemblies (hap1 and hap2) as well as a primary haploid assembly that collapses the bubbles in the graph. Since I am not doing pangenome analysis, I can use the primary assembly to do short-read alignment for variant calling. However, it is often necessary to manually curate the sex chromosomes, especially in a species like White-eared Honeyeater, which contains neo-sex chromosomes. I found that the primary assembly did not contain the full phased sequence for the neo-Z or neo-W because the algorithm incorrectly purged haplotigs that it characterized as redundant but were actually minimally diverged regions of the neo-sex chromosomes in this species. It is not surprising that it purged the redundant contig(s) containing the new PAR because it is not diverged at all between the neo-sex chromosomes. However, it also purged regions where recombination suppression has occurred on the neo-W, leading to nascent divergence between the Z and W gametologs. 
 
-To make sure that all W-linked and Z-linked contigs were included in the final assembly, I had to identify the Z and W linked contigs in all assemblies with a combination of sex differences in coverage and synteny analysis.
+To make sure that all W-linked and Z-linked contigs were included in the final assembly, I had to identify the Z- and W-linked contigs in all assemblies with a combination of sex differences in coverage and synteny analysis.
 
 I ran findZX to conduct a synteny analysis between White-eared Honeyeater and Blue-faced Honeyeater and estimate coverage of the short reads I aligned across the genome from one male and one female. See the R scripts `classify_contigs_cyan_synteny_hap1.R`, `classify_contigs_cyan_cynteny_hap2.R` and `classify_contigs_tgut_synteny_primary.R` in files. 
 
