@@ -11,6 +11,7 @@ library(ggpubr)
 library(gghalves)
 library(cowplot)
 library(gridExtra)
+library(ggrepel)
 setwd("~/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/fst")
 data <- read.table("temperate_arid.pbs.fst.txt",header=F,comment.char = "",skip=1)
 data <- read.table("temperate_arid.pbs.fst_50kb.txt",header=F,comment.char = "",skip=1)
@@ -30,6 +31,16 @@ Zdata$Chr <- "Neo_Z"
 #Zdata$Chr <- str_remove(Zdata$Chr,'_RagTag')
 
 data <- rbind(data,Zdata)
+
+data$start <- data$V3 - 25000
+
+# for combine_summary_metrics.R
+#colnames(data)[5] <- 'Fst'
+#Fstdata <- data
+
+
+
+
 
 # Create data frame for vertical lines 
 lines_df <- data.frame(
@@ -185,8 +196,8 @@ y_top <- max(data$V5, na.rm = TRUE) * 1.01
 df_legend <- data.frame(
   x = 1:4,      
   y = 1:4,      
-  segment_type = factor(c("ancestral Z", "added Z", "new PAR", "PCRs"),
-                        levels = c("ancestral Z", "added Z", "new PAR", "PCRs"))
+  segment_type = factor(c("ancestral Z", "added Z", "new PAR", "MDS outlier regions"),
+                        levels = c("ancestral Z", "added Z", "new PAR", "MDS outlier regions"))
 )
 
 # Generate the dummy plot to extract the legend
@@ -198,7 +209,7 @@ dummy_legend_plot <- ggplot(df_legend, aes(x, y, fill = segment_type, color = se
       "ancestral Z" = "black",
       "added Z"     = "white",
       "new PAR"     = "#857E13",
-      "PCRs"        = "blue"
+      "MDS outlier regions"        = "blue"
     )
   ) +
   scale_color_manual(  
@@ -207,7 +218,7 @@ dummy_legend_plot <- ggplot(df_legend, aes(x, y, fill = segment_type, color = se
       "ancestral Z" = "black",
       "added Z"     = "black",  # Black outline for white fill
       "new PAR"     = "#857E13",
-      "PCRs"        = "blue"
+      "MDS outlier regions"        = "blue"
     )
   ) +
   guides(
@@ -220,7 +231,8 @@ dummy_legend_plot <- ggplot(df_legend, aes(x, y, fill = segment_type, color = se
     )
   ) +
   theme_void() +
-  theme(legend.position = "top", legend.title = element_blank())
+  theme(legend.position = "top", legend.title = element_blank(),
+        legend.text = element_text(size=12))
 
 # Check again if the legend exists
 print(dummy_legend_plot)
@@ -254,6 +266,8 @@ intervals_neoZ$Chr <- as.factor(intervals_neoZ$Chr)
 p <- ggplot(data,aes(V3/1000000,V5,color=in_interval))+
   geom_point()+
   geom_segment(data=intervals_df,aes(x=start/1e6,xend=end/1e6),y=y_top,yend=y_top,color='blue',linewidth=2,inherit.aes=FALSE)+
+  # Black outline segments (slightly thicker)
+  geom_segment(data = intervals_neoZ,aes(x=start,xend=end),y = y_top, yend = y_top,color = 'black', linewidth = 2.8,inherit.aes=FALSE) +
   geom_segment(data=intervals_neoZ,aes(x=start,xend=end),y=y_top,yend=y_top,color=c('black','white','#857E13'),linewidth=2,inherit.aes=FALSE)+
  ylim(0,0.8)+
   xlab("Chromosome position (Mb)")+
@@ -261,11 +275,18 @@ p <- ggplot(data,aes(V3/1000000,V5,color=in_interval))+
   facet_wrap(.~Chr,scales="free_x")+
 #  geom_vline(data = newPAR_vline,aes(xintercept = xcoord),color = "red",linewidth = 1,linetype='dotted')+
 #  geom_vline(data = addedZ_vline,aes(xintercept = xcoord),color = "black",linewidth = 1,linetype='dotted')+
-  theme(axis.title = element_text(size=14),
+  theme_minimal()+
+  theme(axis.title = element_text(size=15),
         axis.text = element_text(size=12),
         strip.text = element_text(size=13),
-        legend.position="none")+
-  scale_color_manual(values=c("grey","darkblue"))
+        legend.position="none",
+          panel.grid.major = element_line(color = "grey99", linewidth = 0.5),
+          panel.grid.minor = element_line(color = "white", linewidth = 0.25),
+        panel.border = element_rect(color = "grey", fill = NA, linewidth = 0.5)
+        )+
+  #scale_color_manual(values=c("darkgrey","darkblue"))+
+  scale_color_manual(values=c("#696969","#696969"))
+
 
 p
 
@@ -279,19 +300,79 @@ final_plot <- plot_grid(
 print(final_plot)
 
 
-ggsave("C:/Users/sophi/Documents/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/figures/Fst_all_chromosomes_neoZ_breakpoints.png", 
-       plot = final_plot, dpi = 350, width = 14, height = 10, units = "in")
+#ggsave("C:/Users/sophi/Documents/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/figures/Fst_all_chromosomes_neoZ_breakpoints.png", 
+#       plot = final_plot, dpi = 350, width = 14, height = 12, units = "in")
+
+ggsave("C:/Users/sophi/Documents/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/figures/Fst_all_chromosomes_neoZ_breakpoints_spelled_out.png", 
+       plot = final_plot, dpi = 350, width = 14, height = 12, units = "in")
+
+
+
+##################################################################################
+# Focus on just the neo-Z and add gene annotations of significant GEA hits
+
+GEA <- read.table("C:/Users/sophi/Documents/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/GEA_hits_neoZ.txt",sep=" ",head=F)
+GEA_order <- GEA[order(GEA$V3),]
+GEA_order_nondup <- GEA_order[!duplicated(GEA_order$V3),]
+
+y_top <- max(neoZ$V5, na.rm = TRUE) * 1.1
+# Plot intervals for neo-Z
+intervals_neoZ <- data.frame(Chr=c("Neo_Z","Neo_Z","Neo_Z"),start=c(0,74.4,111.6),end=c(74.4,111.6,128.9))
+intervals_neoZ$Chr <- as.factor(intervals_neoZ$Chr)
+
+neoZ <- data[data$V2=="scaffold_2_RagTag",]
+
+p <- ggplot(neoZ,aes(start/1000000,V5))+
+  geom_point()+
+  # Black outline segments (slightly thicker)
+  geom_segment(data = intervals_neoZ,aes(x=start,xend=end),y = y_top, yend = y_top,color = 'black', linewidth = 5,inherit.aes=FALSE) +
+  geom_segment(data=intervals_neoZ,aes(x=start,xend=end),y=y_top,yend=y_top,color=c('black','white','#857E13'),linewidth=4.2,inherit.aes=FALSE)+
+  ylim(-0.01,0.25)+
+  xlab("Chromosome position (Mb)")+
+  labs(y = expression(italic(F)[ST]))+
+  theme_minimal()+
+  theme(axis.title = element_text(size=15),
+        axis.text = element_text(size=12),
+        strip.text = element_text(size=13),
+        legend.position="none",
+        panel.grid.major = element_line(color = "grey99", linewidth = 0.5),
+        panel.grid.minor = element_line(color = "white", linewidth = 0.25),
+        panel.border = element_rect(color = "grey", fill = NA, linewidth = 0.5)
+  )+
+  #scale_color_manual(values=c("darkgrey","darkblue"))+
+  scale_color_manual(values=c("#696969","#696969"))+
+  geom_text_repel(
+    data = GEA,       # Separate annotation data frame
+    aes(x = V2/1000000, y = 0.1, label = V3),
+    color = "blue",        # Customize text color
+    vjust = -1,            # Adjust vertical position
+    size = 5,
+    max.overlaps = 20
+  )
+
+
+p
+
+
+
+
+
+
+
+
+
+
 
 ######################################################################################
 # box plot of Fst inside and outside inversions and on the neo-Z
 
 table(data$in_interval)
-data$region <- "Autosome-wide"
-data$region[data$in_interval==TRUE]<-"PCRs"
+data$region <- "Autosomes"
+data$region[data$in_interval==TRUE]<-"MORs"
 data$region[data$V2=="scaffold_2_RagTag"]<-"neo-Z"
 table(data$region)
 
-data$region <- factor(data$region,levels=c("neo-Z","Autosome-wide","PCRs"))
+data$region <- factor(data$region,levels=c("neo-Z","Autosomes","MORs"))
 
 # remove the slightly zero observations
 data_filt <- data[data$V5>0,]
@@ -301,9 +382,10 @@ p <- ggplot(data_filt,aes(region,V5,group=region))+
   #ylim(0,1)+
   xlab("")+
   labs(y = expression(italic(F)[ST]))+
-  stat_compare_means(aes(group=region),comparisons = list(c("Autosome-wide","PCRs"),c("PCRs","neo-Z"),c("Autosome-wide","neo-Z")), 
+  stat_compare_means(aes(group=region),comparisons = list(c("Autosomes","MORs"),c("MORs","neo-Z"),c("Autosomes","neo-Z")), 
                      method = "t.test",
                      label = "p.signif") +
+  theme_minimal()+
   theme(axis.title = element_text(size=14),
         axis.text = element_text(size=12),
         legend.position="none")
@@ -311,7 +393,7 @@ p
 
 
 ggsave("C:/Users/sophi/Documents/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/figures/Fst_autosomes_neoZ_boxplots.png", 
-       plot = p, dpi = 300, width = 6, height = 6, units = "in")
+       plot = p, dpi = 300, width = 6, height = 4, units = "in")
 
 
 
@@ -417,7 +499,7 @@ p
 #ggsave("Fst_scaffold_8_RagTag_breakpoints_xflip.svg", plot = p, dpi = 300, width = 10, height = 7, units = "in")
 ggsave("Fst_scaffold_8_RagTag_breakpoints.svg", plot = p, dpi = 300, width = 10, height = 7, units = "in")
 
-
+######################################################################################
 start_test = 37874992
 end_test = 55974910 
 
@@ -440,8 +522,38 @@ p <- ggplot(data_inv_subset,aes(V3/1000000,V5))+
         strip.text = element_text(size=13),
         legend.position="none")
 
+p
 # Save the plot as a PNG with 300 dpi, for example 10 x 7 inches:
 ggsave("Fst_contig_00047l_breakpoints.svg", plot = p, dpi = 300, width = 10, height = 7, units = "in")
+
+
+
+######################################################################################
+data_subset <- data[data$V2=="pri#ptg000045l",]
+intervals_df_subset <- intervals_df[intervals_df$Chr=="pri#ptg000045l",]
+
+# Individual plots
+p <- ggplot(data_subset,aes(V3/1000000,V5))+
+  geom_point()+
+  geom_line(linewidth=1)+
+  geom_segment(data=intervals_df_subset,aes(x=start/1e6,xend=end/1e6),y=y_top,yend=y_top,color='blue',linewidth=2,inherit.aes=FALSE)+
+  ylim(0,1)+
+  xlab("Chromosome position (Mb)")+
+  #ylab("Fst")+
+  labs(y = expression(italic(F)[ST]))+
+  #  geom_vline(xintercept = 1.7, color = "red", linetype = "dashed") +
+  theme_minimal()+
+  theme(axis.title = element_text(size=14),
+        axis.text = element_text(size=12),
+        strip.text = element_text(size=13),
+        legend.position="none")+
+  scale_x_continuous(breaks = seq(0, 18, by = 2))
+p
+
+ggsave("Fst_priptg000045l_breakpoints_updated_inset.png", plot = p, dpi = 400, width = 7, height = 5, units = "in")
+
+# Save the plot as a PNG with 300 dpi, for example 10 x 7 inches:
+#ggsave("Fst_priptg000015l_breakpoints.svg", plot = p, dpi = 300, width = 10, height = 7, units = "in")
 
 
 ######################################################################################
@@ -451,6 +563,7 @@ intervals_df_subset <- intervals_df[intervals_df$Chr=="pri#ptg000015l",]
 # Individual plots
 p <- ggplot(data_subset,aes(V3/1000000,V5))+
   geom_point()+
+  geom_line(linewidth=1)+
  geom_segment(data=intervals_df_subset,aes(x=start/1e6,xend=end/1e6),y=y_top,yend=y_top,color='blue',linewidth=2,inherit.aes=FALSE)+
   ylim(0,1)+
   xlab("Chromosome position (Mb)")+
@@ -461,10 +574,14 @@ p <- ggplot(data_subset,aes(V3/1000000,V5))+
   theme(axis.title = element_text(size=14),
         axis.text = element_text(size=12),
         strip.text = element_text(size=13),
-        legend.position="none")
+        legend.position="none")+
+  scale_x_continuous(breaks = seq(0, 18, by = 2))
 p
+
+ggsave("Fst_priptg000015l_breakpoints_updated_inset.png", plot = p, dpi = 400, width = 7, height = 5, units = "in")
+
 # Save the plot as a PNG with 300 dpi, for example 10 x 7 inches:
-ggsave("Fst_priptg000015l_breakpoints.svg", plot = p, dpi = 300, width = 10, height = 7, units = "in")
+#ggsave("Fst_priptg000015l_breakpoints.svg", plot = p, dpi = 300, width = 10, height = 7, units = "in")
 
 
 
@@ -480,8 +597,8 @@ p <- ggplot(data_subset,aes(V3/1000000,V5))+
   xlab("Chromosome position (Mb)")+
   #ylab("Fst")+
   labs(y = expression(italic(F)[ST]))+
-  geom_vline(xintercept = 2.8, color = "red", linetype = "dashed") +
-  geom_vline(xintercept = 22.9, color = "red", linetype = "dashed") +
+  geom_vline(xintercept = 2.8, color = "black", linetype = "dashed") +
+  geom_vline(xintercept = 22.9, color = "black", linetype = "dashed") +
   geom_vline(xintercept = 24.7, color = "red", linetype = "dashed") +
   geom_vline(xintercept = 31.7, color = "red", linetype = "dashed") +
   geom_vline(xintercept = 32.5, color = "red", linetype = "dashed") +
@@ -492,8 +609,8 @@ p <- ggplot(data_subset,aes(V3/1000000,V5))+
         legend.position="none")
 p
 # Save the plot as a PNG with 300 dpi, for example 10 x 7 inches:
-ggsave("Fst_scaffold_13_breakpoints.svg", plot = p, dpi = 300, width = 10, height = 7, units = "in")
-
+ggsave("Fst_scaffold_13_breakpoints_colors_updated_inset.svg", plot = p, dpi = 350, width = 7, height = 5, units = "in")
+#ggsave("Fst_scaffold_13_breakpoints.svg", plot = p, dpi = 350, width = 10, height = 7, units = "in")
 
 
 ######################################################################################
