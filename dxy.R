@@ -11,11 +11,18 @@ library(dplyr)
 setwd("~/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/dxy")
 
 
-data <- read.table('dxy_50kb_alldata.txt',comment.char = "",quote="",header=T)
-Zdata <- read.table('dxy_50kb_scaffold_2_neoZ.txt',header=T,quote="",comment.char = "")
+#data <- read.table('dxy_50kb_alldata.txt',comment.char = "",quote="",header=T)
+data <- read.table('dxy_50kb_alldata_fixed.txt',comment.char = "",quote="",header=T)
+#Zdata <- read.table('dxy_50kb_scaffold_2_neoZ.txt',header=T,quote="",comment.char = "")
 
-data <- rbind(data,Zdata)
+#data <- rbind(data,Zdata)
 mean(data$dxy)
+
+
+
+Dxydata <- data
+
+
 
 data$Chr <- str_replace(data$scaffold,'scaffold','Chr')
 data$Chr <- str_remove(data$Chr,'_RagTag')
@@ -171,8 +178,8 @@ intervals_df$Chr <- factor(intervals_df$Chr,levels=c("Neo_Z","Chr_1","Chr_3","Ch
 df_legend <- data.frame(
   x = 1:4,      
   y = 1:4,      
-  segment_type = factor(c("ancestral Z", "added Z", "new PAR", "PCRs"),
-                        levels = c("ancestral Z", "added Z", "new PAR", "PCRs"))
+  segment_type = factor(c("ancestral Z", "added Z", "new PAR", "MDS outlier regions"),
+                        levels = c("ancestral Z", "added Z", "new PAR", "MDS outlier regions"))
 )
 
 # Generate the dummy plot to extract the legend
@@ -184,7 +191,7 @@ dummy_legend_plot <- ggplot(df_legend, aes(x, y, fill = segment_type, color = se
       "ancestral Z" = "black",
       "added Z"     = "white",
       "new PAR"     = "#857E13",
-      "PCRs"        = "blue"
+      "MDS outlier regions"        = "blue"
     )
   ) +
   scale_color_manual(  
@@ -193,7 +200,7 @@ dummy_legend_plot <- ggplot(df_legend, aes(x, y, fill = segment_type, color = se
       "ancestral Z" = "black",
       "added Z"     = "black",  # Black outline for white fill
       "new PAR"     = "#857E13",
-      "PCRs"        = "blue"
+      "MDS outlier regions"        = "blue"
     )
   ) +
   guides(
@@ -206,7 +213,8 @@ dummy_legend_plot <- ggplot(df_legend, aes(x, y, fill = segment_type, color = se
     )
   ) +
   theme_void() +
-  theme(legend.position = "top", legend.title = element_blank())
+  theme(legend.position = "top", legend.title = element_blank(),
+        legend.text = element_text(size=12))
 
 # Check again if the legend exists
 print(dummy_legend_plot)
@@ -223,8 +231,8 @@ grid::grid.draw(custom_legend)
 
 ###########################################################################
 
-data_filt <- data[data$dxy<0.008921566,]
-data_filt <- data[data$dxy<0.006,]
+data_filt <- data[data$dxy<0.08921566,]
+data_filt <- data[data$dxy<0.06,]
 
 y_top <- max(data_filt$dxy, na.rm = TRUE) * 1.01
 
@@ -240,16 +248,23 @@ mean_dxy <- mean(data_filt$dxy)
 p <- ggplot(data_filt,aes(start/1000000,dxy,color=in_interval))+
   geom_point()+
   geom_segment(data=intervals_df,aes(x=start/1e6,xend=end/1e6),y=y_top,yend=y_top,color='blue',linewidth=2,inherit.aes=FALSE)+
+  # Black outline segments (slightly thicker)
+  geom_segment(data = intervals_neoZ,aes(x=start,xend=end),y = y_top, yend = y_top,color = 'black', linewidth = 2.8,inherit.aes=FALSE) +
   geom_segment(data=intervals_neoZ,aes(x=start,xend=end),y=y_top,yend=y_top,color=c('black','white','#857E13'),linewidth=2,inherit.aes=FALSE)+
   xlab("Chromosome position (Mb)")+
   labs(y = expression(italic(D)[xy]))+
   geom_hline(yintercept = mean_dxy, linetype = "dashed", color = "red", size = 1)+
   facet_wrap(.~Chr,scales="free_x")+
-  theme(axis.title = element_text(size=14),
+  theme_minimal()+
+  theme(axis.title = element_text(size=15),
         axis.text = element_text(size=12),
         strip.text = element_text(size=13),
-        legend.position="none")+
-  scale_color_manual(values=c("grey","grey"))
+        legend.position="none",
+        panel.grid.major = element_line(color = "grey99", linewidth = 0.5),
+        panel.grid.minor = element_line(color = "white", linewidth = 0.25),
+        panel.border = element_rect(color = "grey", fill = NA, linewidth = 0.5))+
+ # scale_color_manual(values=c("grey","grey"))+
+  scale_color_manual(values=c("#696969","#696969"))
 
 
 
@@ -266,8 +281,8 @@ final_plot <- plot_grid(
 print(final_plot)
 
 
-ggsave("C:/Users/sophi/Documents/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/figures/Dxy_all_chromosomes_neoZ_breakpoints.png", 
-       plot = final_plot, dpi = 350, width = 14, height = 10, units = "in")
+ggsave("C:/Users/sophi/Documents/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/figures/Dxy_all_chromosomes_neoZ_breakpoints_fixed.png", 
+       plot = final_plot, dpi = 350, width = 14, height = 12, units = "in")
 
 
 
