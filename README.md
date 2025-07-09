@@ -27,11 +27,14 @@ The software and programs used in this project include:
 - [Order of operations for each pipeline](#order-of-operations-for-each-pipeline)
 - [Genome assembly and curation](#genome-assembly-and-curation)
 - [Adapter trimming and read mapping](#adapter-trimming-and-read-mapping)
+### [ANGSD pipeline](#angsd-pipeline)
+- [Flagging duplicates and clipping reads](#flagging-duplicates-and-clipping-reads)
+### [GATK pipeline](#gatk-pipeline)
 
 
 ## Order of operations for each pipeline
 
-### GATK pipeline
+### GATK
 1. trimgalore.jobscript
 2. bwa_sort.jobscript
 3. merge_dedup_flag.jobscript
@@ -43,7 +46,7 @@ The software and programs used in this project include:
 9. Filter VCF files
 10. Run PCA
 
-### ANGSD pipeline
+### ANGSD
 1. trimgalore.jobscript
 2. bwa_sort.jobscript
 3. merge_dedup_clip.jobscript
@@ -364,5 +367,8 @@ java -Xmx30G \
       MODE=SUMMARY
 ```
 
+## ANGSD pipeline
+
+### Flagging duplicates and clipping reads
 
 
