@@ -29,11 +29,11 @@ The software and programs used in this project include:
 - [Order of operations for each pipeline](#order-of-operations-for-each-pipeline)
 - [Genome assembly and curation](#genome-assembly-and-curation)
 - [Adapter trimming and read mapping](#adapter-trimming-and-read-mapping)
-- [Estimating coverage to verify sex chromosome complement](#estimating-coverage-to-verify-sex-chromosome-complement)
 - [ANGSD pipeline](#angsd-pipeline)
   - [Merging bam files](#merging-bam-files)
   - [Removing duplicates and clipping reads](#Removing-duplicates-and-clipping-reads)
   - [Indel realignment](#indel-realignment)
+  - [Estimating coverage to verify sex chromosome complement](#estimating-coverage-to-verify-sex-chromosome-complement)
   - [Calculating genotype likelihoods](#calculating-genotype-likelihoods)
   - [PCA and population structure](#pca-and-population-structure)
   - [Local PCA with local_pcangsd](#local-pca-with-local-pcangsd)
@@ -406,6 +406,7 @@ java -Xmx30G \
 ### Merging bam files
 ### Removing duplicates and clipping reads
 ### Indel realignment
+### Estimating coverage to verify sex chromosome complement
 ### Calculating genotype likelihoods
 ### PCA and population structure
 ### Local PCA with local_pcangsd
@@ -413,6 +414,8 @@ java -Xmx30G \
 ### Genome-wide summary statistics
 
 ## GATK pipeline
+
+I provide a summary of the GATK pipeline below, even though I did not end up using the vcf files with hard-called variants from GATK because the genotype likelihood framework from ANGSD was better suited to my low-to-mid coverage data.
 
 ### Marking duplicates
 
