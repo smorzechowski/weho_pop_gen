@@ -17,6 +17,7 @@ The software and programs used in this project include:
 - [ANGSD](https://www.popgen.dk/angsd/index.php/ANGSD)
 - [PCAngsd](https://github.com/Rosemeis/pcangsd)
 - [ngsRelate](https://github.com/ANGSD/NgsRelate)
+- [ngsLD](https://github.com/fgvieira/ngsLD)
 - [vcftools](https://vcftools.github.io/index.html)
 - [bcftools](https://samtools.github.io/bcftools/bcftools.html)
 - [qualimap](http://qualimap.conesalab.org/)
@@ -27,27 +28,43 @@ The software and programs used in this project include:
 - [Order of operations for each pipeline](#order-of-operations-for-each-pipeline)
 - [Genome assembly and curation](#genome-assembly-and-curation)
 - [Adapter trimming and read mapping](#adapter-trimming-and-read-mapping)
+- [Estimating coverage to verify sex chromosome complement](#estimating-coverage-to-verify-sex-chromosome-complement)
 - [ANGSD pipeline](#angsd-pipeline)
-  - [Flagging duplicates and clipping reads](#flagging-duplicates-and-clipping-reads)
+  - [Merging bam files](#merging-bam-files)
+  - [Removing duplicates and clipping reads](#Removing-duplicates-and-clipping-reads)
+  - [Indel realignment](#indel-realignment)
+  - [Calculating genotype likelihoods](#calculating-genotype-likelihoods)
+  - [PCA and population structure](#pca-and-population-structure)
+  - [Local PCA with local_pcangsd](#local-pca-with-local-pcangsd)
+  - [Creating beagle files for LEA](#creating-beagle-files-for-lea)
+  - [Genome-wide summary statistics](#genome-wide-summary-statistics)
 - [GATK pipeline](#gatk-pipeline)
-  - [Marking duplicates](#marking-duplicates)
+  - [Merging bam files and marking duplicates](#merging-bam-files-and-marking-duplicates)
+  - [Split genome into intervals](#split-genome-into-intervals)
+  - [Running haplotype caller](#running-haplotype-caller)
+  - [Setting up genomicsDB for import](#setting-up-genomicsdb-for-import)
+  - [Running genotypeGVCF]
 - [Genotype-environment association analysis](#genotype-environment-association-analysis)
+  - [sNMF analysis to estimate K ancestry proportions](#snmf-analysis-to-estimate-k-ancestry-proportions)
+  - [LEA analysis](#lea-analysis)
+- [Enrichment of candidate climate genes](#enrichment-of-candidate-climate-genes)
+- [Association between body size and environmental variables](#association-between-body-size-and-environmental-variables)
 
 ## Order of operations for each pipeline
 
-### GATK
+### GATK 
 1. trimgalore.jobscript
 2. bwa_sort.jobscript
 3. merge_dedup_flag.jobscript
-4. split genome into smaller intervals with split_fastaindex.py
+4. split_fastaindex.py
 5. haplotypecaller.jobscript
 6. genomicsDB_import.jobscript
 7. genotypeGVCF.jobscript
 8. Combine VCF files
 9. Filter VCF files
-10. Run PCA
+10. Run PCA, etc.
 
-### ANGSD
+### ANGSD 
 1. trimgalore.jobscript
 2. bwa_sort.jobscript
 3. merge_dedup_clip.jobscript
