@@ -4,6 +4,7 @@
 
 
 library(ggplot2)
+library(dplyr)
 
 setwd("~/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE assembly")
 
@@ -15,6 +16,29 @@ data <- read.table("all_coverage_results_cleaned_final.txt",header=F,sep=" ",com
 data_filt <- data[data$V1=="scaffold_5_RagTag" |
                   data$V1=="scaffold_2_RagTag" |
                   data$V1=="scaffold_1_RagTag",]
+
+
+autos <- data[!is.element(data$V1,c("scaffold_2_RagTag","scaffold_5_RagTag")),]
+
+auto_sum <- autos %>% group_by(V6)%>%
+  summarise(mean_coverage = mean(V4))
+
+mean(auto_sum$mean_coverage)
+max(auto_sum$mean_coverage)
+min(auto_sum$mean_coverage)
+
+
+auto1a <- data[data$V1=="scaffold_1_RagTag",]
+auto1a_sum <- auto1a %>% group_by(V6)%>%
+  summarise(mean_coverage = mean(V4))
+
+mean(auto1a_sum$mean_coverage)
+max(auto1a_sum$mean_coverage)
+min(auto1a_sum$mean_coverage)
+
+
+
+
 
 
 ggplot(data_filt,aes(V6,V4))+
