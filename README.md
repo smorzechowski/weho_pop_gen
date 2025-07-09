@@ -43,7 +43,7 @@ The software and programs used in this project include:
   - [Split genome into intervals](#split-genome-into-intervals)
   - [Running haplotype caller](#running-haplotype-caller)
   - [Setting up genomicsDB for import](#setting-up-genomicsdb-for-import)
-  - [Running genotypeGVCF]
+  - [Running genotypeGVCF]#(running-genotypeGVCF)
 - [Genotype-environment association analysis](#genotype-environment-association-analysis)
   - [sNMF analysis to estimate K ancestry proportions](#snmf-analysis-to-estimate-k-ancestry-proportions)
   - [LEA analysis](#lea-analysis)
@@ -387,8 +387,14 @@ java -Xmx30G \
 
 ## ANGSD pipeline
 
-### Flagging duplicates and clipping reads
-
+### Merging bam files
+### Removing duplicates and clipping reads
+### Indel realignment
+### Calculating genotype likelihoods
+### PCA and population structure
+### Local PCA with local_pcangsd
+### Creating beagle files for LEA
+### Genome-wide summary statistics
 
 ## GATK pipeline
 
