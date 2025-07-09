@@ -402,9 +402,109 @@ java -Xmx30G \
 ```
 
 ## ANGSD pipeline
+Here a provide a comprehensive summary of all the scripts I generated to run ANGSD and estimate genome summary statistics within genotype likelihood framework.
 
 ### Merging bam files
+
+All my 72 lcWGS samples were sequenced across two lanes of an Illumina NovaSeq X in order to have the coverage I requested (~6x for autosomes per individual). I decided not to go much lower than that because I wanted decent coverage (>3x) on the Z and W chromosomes in females. Also, sometimes individuals have to be excluded if they are too low relative to others due to the normal stochasticity that happens during library prep and sequencing. So, after I mapped and validated the bam files, I had to merge the two bam files per individual:
+
+
+```
+# check output directories & create them as needed
+[ -d $RAW_DIR ] || mkdir -p $RAW_DIR
+[ -d $MERGE_DIR ] || mkdir -p $MERGE_DIR
+
+# merge the two bam files for each sample
+samtools merge -r $MERGE_DIR/${SAMPLE}_bwa_merge.bam $RAW_DIR/${SAMPLE}_L003_bwa_sort.bam $RAW_DIR/${SAMPLE}_L004_bwa_sort.bam
+
+# view the header to look at read groups
+#samtools view -H $MERGE_DIR/${SAMPLE}_bwa_merge.bam
+
+# sort the merged file again
+samtools sort $MERGE_DIR/${SAMPLE}_bwa_merge.bam -@ $CPU --output-fmt BAM -o $MERGE_DIR/${SAMPLE}_bwa_merge_sort.bam
+
+# index the sorted merged bam files
+# not sure if this is necessary?
+#samtools index $RAW_DIR/${SAMPLE}_bwa_merge_sort.bam
+
+# get summary of the alignment
+samtools flagstat $MERGE_DIR/${SAMPLE}_bwa_merge_sort.bam > $MERGE_DIR/${SAMPLE}_bwa_merge_sort.bam.flagstat
+
+```
+
+
 ### Removing duplicates and clipping reads
+
+Next, it is necessary to remove PCR and optical duplicates, which are a normal part of the Illumina short-read sequencing process. I used Picard to mark and *remove* the duplicates because I was not sure whether ANGSD can interpret flags in the same way that GATK does. For GATK, it is sufficient to mark reads as being duplicates, rather than removing them; GATK will not include them in the variant calling process.
+
+```
+# Mark duplicates with Picard
+#-XX:-UseGCOverheadLimit -Djava.io.tmpdir=temp/ \
+java -Xmx30G \
+-jar $PICARD MarkDuplicates \
+TMP_DIR=$TMP_DIR \
+INPUT=$MERGE_DIR/${SAMPLE}_bwa_merge_sort.bam \
+OUTPUT=$DEDUP_DIR/${SAMPLE}_bwa_merge_dedup_flag.bam \
+METRICS_FILE=$DEDUP_DIR/${SAMPLE}_bwa_merge_dedup_metrics.txt \
+REMOVE_DUPLICATES=true \
+TAGGING_POLICY=All \
+ASSUME_SORTED=true \
+
+```
+
+Next, I needed to soft clip reads for downstream ANGSD analyses because ANGSD is not able to account for the fact that forward and reverse reads may be overlapping. ANGSD tutorials generally recommend `bamUtil clipOverlap` for this, but I was finding that running this software created a lot of badmate flags, etc. when I ran `ValidateSamFile`. It may have been because of software conflict, I'm not sure. Regardless, I found another way to softclip reads with `fgbio ClimBam`, which seems to have worked great! 
+
+```
+
+# sort reads by query name for fgbio ClipBam
+# remove -u which uncompresses, I don't think we want that
+samtools sort -n -@ $CPU $DEDUP_DIR/${SAMPLE}_bwa_dedup.bam -o $DEDUP_DIR/${SAMPLE}_bwa_dedup_namesort.bam
+
+# soft clip reads using ClipBam from fgbio
+fgbio -Xmx45G ClipBam \
+    -i $DEDUP_DIR/${SAMPLE}_bwa_dedup_namesort.bam \
+    -o $CLIP_DIR/${SAMPLE}_bwa_dedup_clip.bam \
+    -m $CLIP_DIR/${SAMPLE}_clipbam.metrics \
+    -r $GENOME \
+    --clip-overlapping-reads=true \
+    -c Soft
+
+# Sort the reads normally again
+samtools sort -@ $CPU $CLIP_DIR/${SAMPLE}_bwa_dedup_clip.bam -o $CLIP_DIR/${SAMPLE}_bwa_dedup_clip_sort.bam
+
+```
+
+Finally, I ran Picard's `FixMate` to make sure that mate-pair information such as `mate position`, `insert size`, `mate strand orientation` and `proper pair flag` was consistent across paired reads. Then, I reindexed, ran output stats, and validated the bam files one last time.
+
+```
+PICARD='/n/home09/smorzechowski/bin/picard/build/libs/picard.jar'
+# this comes from ArimaGenomics mapping_pipeline
+STATS='/n/home09/smorzechowski/bin/get_stats.pl'
+
+[ -d $CLIP_DIR ] || mkdir -p $CLIP_DIR
+
+# fix mate information
+# output will be sorted automatically the same as input, e.g. by coordinate
+java -Xmx30G \
+-jar $PICARD FixMateInformation \
+       I=$CLIP_DIR/${SAMPLE}_bwa_dedup_clip_sort.bam \
+       O=$CLIP_DIR/${SAMPLE}_bwa_dedup_clip_sort_fixmate.bam \
+       ADD_MATE_CIGAR=true
+
+# Index the final bam files again
+samtools index $CLIP_DIR/${SAMPLE}_bwa_dedup_clip_sort_fixmate.bam
+
+# output stats on mapping using ArimaGenomics perl script
+perl $STATS $CLIP_DIR/${SAMPLE}_bwa_dedup_clip_sort_fixmate.bam > $CLIP_DIR/${SAMPLE}_bwa_dedup_clip_sort_fixmate.bam.stats
+
+
+# validate the fixed mate bam files
+java -Xmx30G \
+-jar $PICARD ValidateSamFile \
+      I=$CLIP_DIR/${SAMPLE}_bwa_dedup_clip_sort_fixmate.bam \
+      MODE=SUMMARY
+```
+
 ### Indel realignment
 ### Estimating coverage to verify sex chromosome complement
 ### Calculating genotype likelihoods
