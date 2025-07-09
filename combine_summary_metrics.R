@@ -173,8 +173,11 @@ p
 
 #ggsave("C:/Users/sophi/Documents/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/figures/Chr4_summary_statistics_fst_dxy_pi.png", 
 #       plot = p, dpi = 350, width = 10, height = 8, units = "in")
-ggsave("C:/Users/sophi/Documents/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/figures/Chr4_summary_statistics_fst_dxy_pi_Tajima.png", 
-       plot = p, dpi = 350, width = 4, height = 5, units = "in")
+#ggsave("C:/Users/sophi/Documents/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/figures/Chr4_summary_statistics_fst_dxy_pi_Tajima.png", 
+#       plot = p, dpi = 350, width = 4, height = 5, units = "in")
+ggsave("C:/Users/sophi/Documents/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/figures/Chr4_summary_statistics_fst_dxy_pi_Tajima_wide.png", 
+       plot = p, dpi = 350, width = 8, height = 3.5, units = "in")
+
 ##################################################################
 #table(!is.element(Chr6Dxy$start,Chr6Fst$start))
 # Chr 6 is duplicated in the Dxy dataset for some reason! Probably during the data filtering process
@@ -190,7 +193,7 @@ Chr6pi <- theta_data[theta_data$Chr=="scaffold_6_RagTag" &theta_data$nSites>1600
 intervals_df_subset <- intervals_df[intervals_df$Chr=="Chr_6",]
 y_top <- max(Chr6Fst$Fst, na.rm = TRUE) * 1.01
 
-y_top <- 0.77
+#y_top <- 0.77
 
 Fst_range <- c(0,0.8)
 Dxy_range <- c(0,0.05)
@@ -224,12 +227,12 @@ c<- ggplot(Chr6pi,aes(start/1000000,Mean_pi,group=population,color=population))+
   geom_line(alpha=0.6)+
   labs(y = expression(italic(theta[pi])))+
   xlab("")+
-  # xlab("Chromosome coordinates (Mb)")+
+  #xlab("Chromosome coordinates (Mb)")+
   theme_bw()+
   theme(legend.title=element_blank(),
-   #     legend.position="none",
+        legend.position="none",
         axis.title=element_text(size=15),
-   #     axis.text.x=element_blank(),
+        axis.text.x=element_blank(),
         axis.text=element_text(size=14),
         legend.text=element_text(size=13),
         plot.margin = unit(c(0, 0, 0, 0), "pt"))+
@@ -247,7 +250,7 @@ d<- ggplot(Chr6pi,aes(start/1000000,Tajima,group=population,color=population))+
         legend.text=element_text(size=13))+
   scale_color_manual(values=c("red","black"))+
   ylim(-2.7,1)
-#scale_y_continuous(limits=D_range,breaks = D_range)
+scale_y_continuous(limits=D_range,breaks = D_range)
 
 #p <- a/b/c
 
@@ -263,8 +266,11 @@ p <- a/b/c/d +
   )
 p
 
-ggsave("C:/Users/sophi/Documents/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/figures/Chr6_summary_statistics_fst_dxy_pi_Tajima.png", 
-       plot = p, dpi = 350, width = 4, height = 5, units = "in")
+#ggsave("C:/Users/sophi/Documents/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/figures/Chr6_summary_statistics_fst_dxy_pi_Tajima.png", 
+#       plot = p, dpi = 350, width = 4, height = 5, units = "in")
+
+ggsave("C:/Users/sophi/Documents/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/figures/Chr6_summary_statistics_fst_dxy_pi_Tajima_wide.png", 
+       plot = p, dpi = 350, width = 8, height = 3.5, units = "in")
 
 ##################################################################
 Chr8Fst <- Fstdata[Fstdata$V2=="scaffold_8_RagTag"& Fstdata$V4>16000,]
@@ -273,7 +279,7 @@ Chr8_join <- left_join(Chr8Fst,Chr8Dxy)
 Chr8pi <- theta_data[theta_data$Chr=="scaffold_8_RagTag" & theta_data$nSites>16000,]
 
 intervals_df_subset <- intervals_df[intervals_df$Chr=="Chr_8",]
-y_top <- max(Chr15Fst$Fst, na.rm = TRUE) * 1.01
+y_top <- max(Chr8Fst$Fst, na.rm = TRUE) * 1.01
 
 y_top <- 0.77
 
@@ -347,8 +353,12 @@ p
 
 #ggsave("C:/Users/sophi/Documents/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/figures/Chr8_summary_statistics_fst_dxy_pi.png", 
 #       plot = p, dpi = 350, width = 10, height = 8, units = "in")
-ggsave("C:/Users/sophi/Documents/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/figures/Chr8_summary_statistics_fst_dxy_pi_Tajima.png", 
-       plot = p, dpi = 350, width = 4, height = 5, units = "in")
+#ggsave("C:/Users/sophi/Documents/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/figures/Chr8_summary_statistics_fst_dxy_pi_Tajima.png", 
+#       plot = p, dpi = 350, width = 4, height = 5, units = "in")
+
+ggsave("C:/Users/sophi/Documents/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/figures/Chr8_summary_statistics_fst_dxy_pi_Tajima_wide.png", 
+       plot = p, dpi = 350, width = 8, height = 3.5, units = "in")
+
 
 ##################################################################
 Chr9Fst <- Fstdata[Fstdata$V2=="scaffold_9_RagTag" & Fstdata$V4>16000,]
@@ -647,13 +657,13 @@ scale_y_continuous(limits=Dxy_range,breaks = Dxy_range)
 c<- ggplot(Chr14pi,aes(start/1000000,Mean_pi,group=population,color=population))+
   geom_line(alpha=0.6)+
   labs(y = expression(italic(theta[pi])))+
-  #xlab("")+
-  xlab("Chromosome coordinates (Mb)")+
+  xlab("")+
+ # xlab("Chromosome coordinates (Mb)")+
   theme_bw()+
   theme(legend.title=element_blank(),
        # legend.position="none",
         axis.title=element_text(size=15),
-       # axis.text.x=element_blank(),
+        axis.text.x=element_blank(),
         axis.text=element_text(size=14),
         legend.text=element_text(size=13))+
   scale_color_manual(values=c("red","black"))+
@@ -694,7 +704,8 @@ ggsave("C:/Users/sophi/Documents/PhD research/Neo sex chromosome/WEHE pop gen ch
        plot = p, dpi = 350, width = 4, height = 5, units = "in")
 
 
-
+#ggsave("C:/Users/sophi/Documents/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/figures/Chr14_summary_statistics_fst_dxy_pi_Tajima_wide.png", 
+#       plot = p, dpi = 350, width = 7, height = 7, units = "in")
 
 
 ##################################################################
@@ -778,9 +789,8 @@ p
 
 #ggsave("C:/Users/sophi/Documents/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/figures/Chr15_summary_statistics_fst_dxy_pi.png", 
 #       plot = p, dpi = 350, width = 10, height = 8, units = "in")
-ggsave("C:/Users/sophi/Documents/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/figures/Chr15_summary_statistics_fst_dxy_pi_Tajima.png", 
-       plot = p, dpi = 350, width = 4, height = 5, units = "in")
-
+#ggsave("C:/Users/sophi/Documents/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/figures/Chr15_summary_statistics_fst_dxy_pi_Tajima.png", 
+#       plot = p, dpi = 350, width = 4, height = 5, units = "in")
 
 
 
@@ -868,7 +878,8 @@ p
 #       plot = p, dpi = 350, width = 10, height = 8, units = "in")
 ggsave("C:/Users/sophi/Documents/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/figures/Chr17_summary_statistics_fst_dxy_pi_Tajima.png", 
        plot = p, dpi = 350, width = 4, height = 5, units = "in")
-
+#ggsave("C:/Users/sophi/Documents/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/figures/Chr17_summary_statistics_fst_dxy_pi_Tajima.png", 
+#       plot = p, dpi = 350, width = 10, height = 8, units = "in")
 
 
 ##################################################################
@@ -967,7 +978,7 @@ y_top <- max(pri15Fst$Fst, na.rm = TRUE) * 1.01
 y_top <- 0.77
 
 Fst_range <- c(0,0.8)
-Dxy_range <- c(0,0.05)
+Dxy_range <- c(0,0.04)
 Pi_range <- c(0,0.04)
 D_range <- c(-3,1)
 
@@ -1036,8 +1047,12 @@ p
 
 #ggsave("C:/Users/sophi/Documents/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/figures/pri15_summary_statistics_fst_dxy_pi.png", 
 #       plot = p, dpi = 350, width = 10, height = 8, units = "in")
-ggsave("C:/Users/sophi/Documents/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/figures/pri15_summary_statistics_fst_dxy_pi_Tajima.png", 
-       plot = p, dpi = 350, width = 4, height = 5, units = "in")
+#ggsave("C:/Users/sophi/Documents/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/figures/pri15_summary_statistics_fst_dxy_pi_Tajima.png", 
+#       plot = p, dpi = 350, width = 4, height = 5, units = "in")
+
+ggsave("C:/Users/sophi/Documents/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/figures/pri15_summary_statistics_fst_dxy_pi_Tajima_wide.png", 
+       plot = p, dpi = 350, width = 7, height = 7, units = "in")
+
 ##################################################################
 pri45Fst <- Fstdata[Fstdata$V2=="pri#ptg000045l" & Fstdata$V4>16000,]
 pri45Dxy <- Dxydata[Dxydata$scaffold=="pri#ptg000045l",]
