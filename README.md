@@ -1,6 +1,6 @@
 # Scripts associated with a population genomic analysis of White-eared Honeyeaters (*Nesoptilotis leucotis*)
 
-This readme provides an overview of the genomic analyses conducted in this project. I primarily ran the ANGSD pipeline for variant calling because I sequenced 72 individuals at an average depth of 6x coverage, which is in the low-to-mid coverage range better suited for the genotype likelihood framework of ANGSD. Howevever, I include the manual GATK pipeline for hard calling variants as well.  
+This readme provides an overview of the genomic analyses conducted in this project. I primarily ran the ANGSD pipeline for variant calling because I sequenced 72 individuals at an average depth of 6x coverage, which is in the low-to-mid coverage range best suited for the genotype likelihood framework of ANGSD. Howevever, I include the manual GATK pipeline for hard-calling variants as well.  
 
 The software and programs used in this project include:
 
@@ -25,6 +25,7 @@ The software and programs used in this project include:
 
 
 # Contents
+- [Jobscripts and runscripts](#jobscripts-and-runscripts)
 - [Order of operations for each pipeline](#order-of-operations-for-each-pipeline)
 - [Genome assembly and curation](#genome-assembly-and-curation)
 - [Adapter trimming and read mapping](#adapter-trimming-and-read-mapping)
@@ -49,6 +50,17 @@ The software and programs used in this project include:
   - [LEA analysis](#lea-analysis)
 - [Enrichment of candidate climate genes](#enrichment-of-candidate-climate-genes)
 - [Association between body size and environmental variables](#association-between-body-size-and-environmental-variables)
+
+## Jobscripts and runscripts
+
+For most analyses, I provide both jobscripts and runscripts. The jobscript houses the self-contained code to run the analysis, whereas the runscript provides the filepaths to the input files and submits the jobscript to SLURM with the `sbatch` command. I partition my analyses into these two scripts, thanks to a recommendation from Daren Card, because it facilitates record-keeping. The jobscript remains unchanged because I have used positional parameters (e.g. $1 $2) to make the jobscript universal. Each time I run the analysis, I add a new `sbatch` command to the runscript:
+
+```
+#!/bin/bash
+
+# Run X Analysis again
+sbatch X.jobscript $filepath1 $filepath2 $output1
+```
 
 ## Order of operations for each pipeline
 
@@ -398,6 +410,15 @@ java -Xmx30G \
 
 ## GATK pipeline
 
-### Marking duplicates 
+### Marking duplicates
+
+## Genotype-environment association analysis
+
+### sNMF analysis to estimate K ancestry proportions
+### LEA analysis
+
+## Enrichment of candidate climate genes
+
+## Association between body size and environmental variables
 
 
