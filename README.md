@@ -375,3 +375,8 @@ java -Xmx30G \
 ### Flagging duplicates and clipping reads
 
 
+## GATK pipeline
+
+### Marking duplicates 
+
+
