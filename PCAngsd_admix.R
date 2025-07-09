@@ -5,6 +5,7 @@ library(ggplot2)
 library(tidyr)
 library(dplyr)
 library(pals)
+library(LEA)
 setwd("~/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/pcangsd/admix")
 
 # Load the admixture data for K=2
