@@ -27,9 +27,9 @@ The software and programs used in this project include:
 - [Order of operations for each pipeline](#order-of-operations-for-each-pipeline)
 - [Genome assembly and curation](#genome-assembly-and-curation)
 - [Adapter trimming and read mapping](#adapter-trimming-and-read-mapping)
-### [ANGSD pipeline](#angsd-pipeline)
+[ANGSD pipeline](#angsd-pipeline)
 - [Flagging duplicates and clipping reads](#flagging-duplicates-and-clipping-reads)
-### [GATK pipeline](#gatk-pipeline)
+[GATK pipeline](#gatk-pipeline)
 
 
 ## Order of operations for each pipeline
