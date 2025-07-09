@@ -1,0 +1,3 @@
+#!/bin/bash
+#sbatch dedup_clip.jobscript Moon_365022_F
+sbatch dedup_clip.jobscript Moon_365021_M
