@@ -1,10 +1,11 @@
 # inversion genotypes to vcf dummy file of pseudo SNPs
-# S. M. Orzechowski, using o3-mini-high 
+# S. M. Orzechowski, using o3-mini-high for coding guidance
 # February 2025
 
 
 library(dplyr)
 library(stringr)
+library(ggplot2)
 
 setwd("~/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/local_pcangsd/tables")
 pops <- read.csv('~/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/all_samples_pops_lat_long.csv',header=T)
