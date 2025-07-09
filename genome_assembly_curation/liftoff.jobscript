@@ -1,0 +1,30 @@
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH --ntasks 1
+#SBATCH --cpus-per-task 8
+#SBATCH -p test,edwards,shared
+#SBATCH -e log/liftoff%A.err
+#SBATCH -o log/liftoff%A.out
+#SBATCH -J liftoff
+#SBATCH --mem=40g
+#SBATCH --time=12:00:00
+
+module load python
+source activate liftoff
+
+target=$1
+reference=$2
+gff=$3
+outfile=$4
+
+liftoff ${target} ${reference} \
+-g ${gff} \
+-o ${outfile}.gff \
+-u unmapped_features_v2.txt \
+-infer_genes \
+-p 8 \
+-mismatch 1 \
+-flank 0.2 \
+-exclude_partial \
+-mm2_options "-x asm20 -4" \
+-copies copies_genes.gff \

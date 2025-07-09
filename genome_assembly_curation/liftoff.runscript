@@ -1,0 +1,10 @@
+#!/bin/bash
+
+
+target='/n/holylfs04/LABS/edwards_lab/Lab/smorzechowski/meliphagid/ReferenceAssemblies/Nleucotis/Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded_PAR_masked.fasta'
+reference='/n/holylfs04/LABS/edwards_lab/Lab/smorzechowski/meliphagid/ReferenceAssemblies/Ecyanotis/Ecyan_HiC_v3.0.fa'
+gff='/n/holylfs04/LABS/edwards_lab/Lab/smorzechowski/meliphagid/AnnotationData/Ecyan_HiC_v3.0_complement_togaZW_stringtie_transdecoder_updated_2.0.anno.gff'
+#outfile='Ecyan_to_Nleu'
+outfile='Ecyan_to_Nleu_v2'
+
+sbatch liftoff.jobscript $target $reference $gff $outfile
