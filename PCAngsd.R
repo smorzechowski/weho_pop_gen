@@ -59,6 +59,9 @@ varPC3 <- (mme.pca$values[3]/pca.eigenval.sum)*100 #Variance explained by PC3
 varPC4 <- (mme.pca$values[4]/pca.eigenval.sum)*100 #Variance explained by PC4
 varPC5 <- (mme.pca$values[5]/pca.eigenval.sum)*100 #Variance explained by PC4
 varPC6 <- (mme.pca$values[6]/pca.eigenval.sum)*100 #Variance explained by PC4
+varPC67 <- (mme.pca$values[67]/pca.eigenval.sum)*100 #Variance explained by PC4
+
+length(mme.pca$values)
 
 varPC1
 varPC2
@@ -66,6 +69,8 @@ varPC3
 varPC4
 varPC5
 varPC6
+
+varPC67
 
 Apop_excl_1st_f <- factor(Apop_excl_1st)
 
@@ -78,7 +83,7 @@ pca_exc <- ggplot(data = pca.vectors, aes(x = X1, y = X2, colour = Apop_excl_1st
  xlim(-0.3,0.3)+
  # geom_text(aes(label = samples_excl_1st$samples), vjust = -1, size = 3,show.legend=FALSE) +
   #geom_text_repel(aes(label = pop), size = 3,max.overlaps = 10) +
-  labs(title = "B.",# Autosomal population structure excluding inversions",
+  labs(title = "A.",# Autosomal population structure excluding inversions",
        x = paste0("PC1 (", round(varPC1, 1), "%)"),
        y = paste0("PC2 (", round(varPC2, 1), "%)")) +
   theme_minimal()+
@@ -87,8 +92,7 @@ pca_exc <- ggplot(data = pca.vectors, aes(x = X1, y = X2, colour = Apop_excl_1st
         axis.title=element_text(size=18),
         plot.title=element_text(face="bold",size=16),
         legend.title=element_blank(),
-        legend.text=element_text(size=15),
-        legend.position="none")+
+        legend.text=element_text(size=15))+
   scale_color_manual(values=colors)
 
 
@@ -149,7 +153,7 @@ pca_inc <- ggplot(data = pca.vectors, aes(x = X1, y = X2, colour = Apop_excl_1st
   xlim(-0.3,0.3)+
 #  geom_text(aes(label = samples_excl_1st$samples), vjust = -1, size = 3,show.legend=FALSE) +
   #geom_text_repel(aes(label = pop), size = 3,max.overlaps = 10) +
-  labs(title = "A.",# Autosomal population structure including inversions",
+  labs(title = "B.",# Autosomal population structure including inversions",
        x = paste0("PC1 (", round(varPC1, 1), "%)"),
        y = paste0("PC2 (", round(varPC2, 1), "%)")) +
   theme_minimal()+
@@ -157,16 +161,21 @@ pca_inc <- ggplot(data = pca.vectors, aes(x = X1, y = X2, colour = Apop_excl_1st
         axis.title=element_text(size=18),
         plot.title=element_text(face="bold",size=16),
         legend.title=element_blank(),
-        legend.text=element_text(size=15))+
+        legend.text=element_text(size=15),
+        legend.position="none")+
   scale_color_manual(values=colors)+
   scale_x_continuous(limits = c(-0.3,0.3), breaks = c(-0.2,-0.1,0,0.1,0.2))
 
 print(pca_inc)
 
 
-p <- pca_inc/pca_exc
+#p <- pca_inc/pca_exc
+p <- pca_exc/pca_inc
 
 p
+ggsave("C:/Users/sophi/Documents/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/figures/Figure3_Pcangsd_autos_PCA_with_without_inversions_flipped.png", 
+       plot = p, dpi = 300, width = 6, height = 8, units = "in")
+
 ggsave("C:/Users/sophi/Documents/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/figures/Figure3_Pcangsd_autos_PCA_with_without_inversions.png", 
        plot = p, dpi = 300, width = 6, height = 8, units = "in")
 
