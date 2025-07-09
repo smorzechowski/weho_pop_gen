@@ -53,13 +53,17 @@ The software and programs used in this project include:
 
 ## Jobscripts and runscripts
 
-For most analyses, I provide both jobscripts and runscripts. The jobscript houses the self-contained code to run the analysis, whereas the runscript provides the filepaths to the input files and submits the jobscript to SLURM with the `sbatch` command. I partition my analyses into these two scripts, thanks to a recommendation from Daren Card, because it facilitates record-keeping. The jobscript remains unchanged because I have used positional parameters (e.g. $1 $2) to make the jobscript universal. Each time I run the analysis, I add a new `sbatch` command to the runscript:
+For most analyses, I provide both jobscripts and runscripts. The jobscript houses the self-contained code to run the analysis and submit to SLURM, whereas the runscript is a simple bash script that provides the filepaths to the input files and submits the jobscript to SLURM with the `sbatch` command. I partition my analyses into these two scripts, thanks to a recommendation from Daren Card, because it facilitates record-keeping. The jobscript remains unchanged because I have used positional parameters (e.g. $1 $2) to make the jobscript universal. Parameter $1 refers to the first input provided to `sbatch`; parameter $2 refers to the second input, and so on. Each time I run the analysis, I add a new `sbatch` command to the runscript:
 
 ```
 #!/bin/bash
 
+input1='file/path/filename1.txt'
+input2='file/path/filename2.txt'
+input3='file/path/filename3.txt'
+
 # Run X Analysis again
-sbatch X.jobscript $filepath1 $filepath2 $output1
+sbatch X.jobscript $input1 $input2 $input3
 ```
 
 ## Order of operations for each pipeline
