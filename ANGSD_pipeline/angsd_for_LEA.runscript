@@ -1,0 +1,16 @@
+#!/bin/bash
+
+
+# run angsd for LEA on autosomes
+# NOTE: -minInd 55 = 15% missing data allowed
+#bamlist='allbamspath_excl_1st_2nd_order_Binya.txt'
+#region='autosomes_39_chrom_unplaced_scaf.txt'
+#out='Nleu_autos_lea'
+#sbatch angsd_for_LEA.jobscript $bamlist $region $out
+
+# run angsd for LEA on autosomes and neo-Z in males only
+# NOTE: -minInd 36 = 15% missing data allowed
+bamlist='malebamspath_excl_1st_order_Binya.txt'
+region='autosomes_39_chrom_unplaced_scaf_neoZ.txt'
+out='Nleu_autos_neoZ_lea_males'
+sbatch angsd_for_LEA.jobscript $bamlist $region $out

@@ -1,0 +1,38 @@
+#!/bin/bash
+
+
+# Create SFS for temperate population (includes both northern and southern transect)
+#bamlist='temperate_bamspath_excl_1st_2nd_order_Binya.txt'
+#region='autosomes_39_chrom_unplaced_scaf.txt'
+#pop='temperate'
+#sbatch population_saf_autosomes.jobscript $bamlist $region $pop
+
+# Create SFS for arid population (Nom, Mallee, Binya)
+#bamlist='arid_bamspath_excl_1st_2nd_order_Binya.txt'
+#region='autosomes_39_chrom_unplaced_scaf.txt'
+#pop='arid'
+#sbatch population_saf_autosomes.jobscript $bamlist $region $pop
+
+# Now try calculating joint 2D SFS and Fst
+#bamlist='NA'
+#region='NA'
+#pop='NA'
+#sbatch population_saf_autosomes.jobscript $bamlist $region $pop
+
+# Now calculate theta for each population - arid
+#bamlist='NA'
+#region='NA'
+#pop='arid'
+#sbatch population_saf_autosomes.jobscript $bamlist $region $pop
+
+# Now calculate theta for each population - temperate
+#bamlist='NA'
+#region='NA'
+#pop='temperate'
+#sbatch population_saf_autosomes.jobscript $bamlist $region $pop
+
+# Recalculate Fst in nonoverlapping 50kb windows
+bamlist='NA'
+region='NA'
+pop='NA'
+sbatch population_saf_autosomes.jobscript $bamlist $region $pop

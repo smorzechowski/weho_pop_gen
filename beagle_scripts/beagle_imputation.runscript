@@ -1,0 +1,12 @@
+#!/bin/bash
+
+# Run for autosomes
+#input='Nleu_autos_lea_depth_filt.vcf.gz'
+#map='Nleu_autos_lea_depth_filt_plink_v2.map'
+#output='Nleu_autos_lea_depth_filt_imputed'
+#sbatch beagle_imputation.jobscript $input $output
+
+# Run for males: autos and neoZ
+input='Nleu_autos_neoZ_lea_males_depth_filt.vcf.gz'
+output='Nleu_autos_neoZ_lea_males_depth_filt_imputed'
+sbatch beagle_imputation.jobscript $input $output

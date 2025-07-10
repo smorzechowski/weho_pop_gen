@@ -1,0 +1,9 @@
+#!/bin/bash
+
+
+# Run on 39 scaffolded autosomes, plus 7 unplaced scaffolds
+# includes inversion regions
+bamlist='allbamspath.txt'
+region='autosomes_39_chrom_unplaced_scaf.txt'
+out='Nleu_autos_saf_v1'
+sbatch saf_autosomes.jobscript $bamlist $region $out

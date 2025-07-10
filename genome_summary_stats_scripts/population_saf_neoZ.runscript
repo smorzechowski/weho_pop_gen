@@ -1,0 +1,39 @@
+#!/bin/bash
+
+
+# Create SFS for temperate population (includes both northern and southern transect)
+# Includes the newPAR
+# also excluded Mull_107 as a third order relative but did not update the name here
+#bamlist='temperate_malebamspath_excl_1st_order_Walch_2nd_order_Binya.txt'
+#region='neoZ_full.txt'
+#pop='temperate'
+#sbatch population_saf_neoZ.jobscript $bamlist $region $pop
+
+# Create SFS for arid population (Nom, Mallee, Binya)
+# Includes the newPAR
+#bamlist='arid_malebamspath_excl_1st_order_Binya.txt'
+#region='neoZ_full.txt'
+#pop='arid'
+#sbatch population_saf_neoZ.jobscript $bamlist $region $pop
+
+# Calculate joint 2D SFS for temperate and arid
+# Modified the job script accordingly
+
+#bamlist=NA
+#region=NA
+#pop=NA
+#sbatch population_saf_neoZ.jobscript $bamlist $region $pop
+
+# Calculate theta for arid pop
+#bamlist=NA
+#region=NA
+#pop='arid'
+
+#sbatch population_saf_neoZ.jobscript $bamlist $region $pop
+
+# Calculate theta for temperate pop
+bamlist=NA
+region=NA
+pop='temperate'
+
+sbatch population_saf_neoZ.jobscript $bamlist $region $pop

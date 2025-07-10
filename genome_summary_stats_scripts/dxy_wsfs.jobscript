@@ -1,0 +1,22 @@
+#!/bin/bash
+#SBATCH -p edwards,shared        # Partition to submit to
+#SBATCH --ntasks 1              # Number of tasks
+#SBATCH --cpus-per-task 1
+#SBATCH -t 03-00:00       # Runtime in days-hours:minutes
+#SBATCH --mem 20g         # Memory in MB
+#SBATCH -J dxy_wsfs          # job name
+#SBATCH -o log/dxy_wsfs.%A.out        # File to which standard out will be written
+#SBATCH -e log/dxy_wsfs.%A.err        # File to which standard err will be written
+#SBATCH --mail-type=FAIL           # Type of email notification- BEGIN,END,FAIL,ALL
+#SBATCH --mail-user=smorzechowski@g.harvard.edu  # Email to which notifications will be sent
+#SBATCH --account=wakeley_lab
+
+
+module load python
+source activate dxy_wsfs_env
+module purge
+
+window=$1
+out=$2
+
+python /n/home09/smorzechowski/bin/dxy_wsfs.py -w $window -m 19 -n 29 -o $out

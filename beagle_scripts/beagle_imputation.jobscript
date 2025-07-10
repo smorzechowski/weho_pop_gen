@@ -1,0 +1,26 @@
+#!/bin/bash
+#SBATCH -p edwards,shared        # Partition to submit to
+#SBATCH --ntasks 1          # Number of tasks
+#SBATCH --cpus-per-task 16  # Number of cores per task
+#SBATCH -t 03-00:00       # Runtime in days-hours:minutes
+#SBATCH --mem 80g         # Memory in MB
+#SBATCH -J beagle          # job name
+#SBATCH -o log/beagle.%A.out        # File to which standard out will be written
+#SBATCH -e log/beagle.%A.err        # File to which standard err will be written
+#SBATCH --mail-type=FAIL           # Type of email notification- BEGIN,END,FAIL,ALL
+#SBATCH --mail-user=smorzechowski@g.harvard.edu  # Email to which notifications will be sent
+#SBATCH --account=wakeley_lab
+
+bin='/n/home09/smorzechowski/bin'
+module load jdk/20.0.1-fasrc01
+
+input=$1
+#map=$2
+out=$2
+
+java -Xss5m -Xmx80g -jar $bin/beagle.27Jan18.7e1.jar \
+gl=$input \
+out=$out \
+nthreads=16 \
+
+# map=$map \

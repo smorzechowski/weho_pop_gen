@@ -1,0 +1,70 @@
+#!/bin/bash
+
+#window='cleaned_arid.temperate.scaffold_6_RagTag.50win.v2.sfs'
+#out='dxy_50kb_scaffold_6_v3.txt'
+#mpop=27
+#npop=32
+
+#window='dxy_results/arid.temperate.scaffold_10_RagTag.50kwin.sfs'
+#out='dxy_50kb_scaffold_10.txt'
+#mpop=19
+#npop=29
+
+#window='dxy_results/arid.temperate.scaffold_12_RagTag.50kwin.sfs'
+#out='dxy_50kb_scaffold_12.txt'
+#mpop=19
+#npop=29
+
+#window='dxy_results/arid.temperate.scaffold_11_RagTag.50kwin.sfs'
+#out='dxy_50kb_scaffold_11.txt'
+#mpop=19
+#npop=29
+
+#window='dxy_results/arid.temperate.scaffold_14_RagTag.50kwin.sfs'
+#out='dxy_results/dxy_50kb_scaffold_14.txt'
+#mpop=19
+#npop=29
+
+#window='dxy_results/arid.temperate.scaffold_13_RagTag.50kwin.sfs'
+#out='dxy_results/dxy_50kb_scaffold_13.txt'
+#mpop=19
+#npop=29
+
+#window='dxy_results/arid.temperate.scaffold_15_RagTag.50kwin.sfs'
+#out='dxy_results/dxy_50kb_scaffold_15.txt'
+#mpop=19
+#npop=29
+
+#window='dxy_results/arid.temperate.scaffold_16_RagTag.50kwin.sfs'
+#out='dxy_results/dxy_50kb_scaffold_16.txt'
+#mpop=19
+#npop=29
+
+#window='dxy_results/arid.temperate.scaffold_17_RagTag.50kwin.sfs'
+#out='dxy_results/dxy_50kb_scaffold_17.txt'
+#mpop=19
+#npop=29
+
+#window='dxy_results/arid.temperate.scaffold_18_RagTag.50kwin.sfs'
+#out='dxy_results/dxy_50kb_scaffold_18.txt'
+#mpop=19
+#npop=29
+
+while IFS= read -r chrom; do
+
+window="dxy_results/${chrom}"
+
+basename="${chrom#arid.temperate.}"   # Remove the prefix
+basename="${basename%.50kwin.sfs}"         # Remove the suffix
+
+out="dxy_results/dxy_50kb_${basename}_fixed.txt"
+sbatch dxy_wsfs.jobscript $window $out
+#done < dxy_results/remaining_results_list.txt
+done < dxy_results/remaining_updated_results_list.txt
+
+# The neo-Z chromosome - note difference in sample size!
+#window='dxy_results/arid.temperate.scaffold_2_RagTag.50kwin.sfs'
+#out='dxy_results/dxy_50kb_scaffold_2_neoZ.txt'
+#mpop=13
+#npop=19
+#sbatch dxy_wsfs.jobscript $window $out

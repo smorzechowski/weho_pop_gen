@@ -1,0 +1,91 @@
+#!/bin/bash
+#SBATCH -p edwards,shared        # Partition to submit to
+#SBATCH --ntasks 1              # Number of tasks
+#SBATCH --cpus-per-task 8
+#SBATCH -t 03-00:00       # Runtime in days-hours:minutes
+#SBATCH --mem 100g         # Memory in MB
+#SBATCH -J pop_saf          # job name
+#SBATCH -o log/pop_saf.%A.out        # File to which standard out will be written
+#SBATCH -e log/pop_saf.%A.err        # File to which standard err will be written
+#SBATCH --mail-type=FAIL           # Type of email notification- BEGIN,END,FAIL,ALL
+#SBATCH --mail-user=smorzechowski@g.harvard.edu  # Email to which notifications will be sent
+#SBATCH --account=wakeley_lab
+
+BASEDIR='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/14-angsd'
+ANGSD='/n/home09/smorzechowski/bin/angsd/angsd'
+REF='/n/holylfs04/LABS/edwards_lab/Lab/smorzechowski/meliphagid/ReferenceAssemblies/Nleucotis/Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded_PAR_masked.fasta'
+RM_DIR='/n/holylfs04/LABS/edwards_lab/Lab/smorzechowski/meliphagid/ReferenceAssemblies/Nleucotis/Nleu_final_genome_softmask'
+REALSFS='/n/home09/smorzechowski/bin/angsd/misc/realSFS'
+thetaStat='/n/home09/smorzechowski/bin/angsd/misc/thetaStat'
+
+# index the sites file, do this just once
+#$ANGSD sites index $RM_DIR'/Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded_PAR_masked_sites_keep_1based.txt'
+
+bamfile=$1
+region=$2
+pop=$3
+
+# activate dependencies for pcangsd
+module load python
+source activate pcangsd
+module purge
+
+# PCA based on all SNPs without LD pruning first
+# minor allele freq > 0.05
+# changed from anc to ref; important for certain parameters
+# GL are calculated from the data here, however
+# decide whether to use -only_proper_pairs 1
+
+
+#$ANGSD -b $BASEDIR'/sample_lists/'$bamfile \
+#-ref $REF \
+#-anc $REF \
+#-rf $BASEDIR'/regions/'$region \
+#-out $BASEDIR'/saf_results/'${pop}'_autos_pop_saf' \
+#-minMapQ 30 \
+#-minQ 30 \
+#-doSaf 1 \
+#-GL 1 \
+#-P 8 \
+#-trim 0 \
+#-sites $RM_DIR'/Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded_PAR_masked_sites_keep_1based.txt' \
+#-remove_bads 1 \
+#-uniqueOnly 1 \
+#-only_proper_pairs 1 \
+#-minInd 9 \
+
+# create a folded SFS without the ancestral state available yet
+#$REALSFS $BASEDIR'/saf_results/'${pop}'_autos_pop_saf.saf.idx' \
+#-P 8 -fold 1 > $BASEDIR'/saf_results/'${pop}'_autos_pop.out.sfs'
+
+# Calculate joint 2D SFS
+#$REALSFS $BASEDIR'/saf_results/temperate_autos_pop_saf.saf.idx' \
+#$BASEDIR'/saf_results/arid_autos_pop_saf.saf.idx' -P 8 > $BASEDIR'/saf_results/temperate_arid.sfs'
+
+# Calculate Fst
+#$REALSFS fst index \
+#$BASEDIR'/saf_results/temperate_autos_pop_saf.saf.idx' \
+#$BASEDIR'/saf_results/arid_autos_pop_saf.saf.idx' \
+#-sfs $BASEDIR'/saf_results/temperate_arid.sfs' \
+#-fstout $BASEDIR'/saf_results/temperate_arid.pbs' \
+#-whichFst 1 \
+
+# Sliding window analysis for Fst
+$REALSFS fst stats2 \
+$BASEDIR'/saf_results/temperate_arid.pbs.fst.idx' \
+-win 50000 \
+-step 50000 \
+> $BASEDIR'/saf_results/temperate_arid.pbs.fst_50kb.txt'
+
+
+# convert saf to theta
+#$REALSFS saf2theta $BASEDIR'/saf_results/'${pop}'_autos_pop_saf.saf.idx' \
+#-sfs $BASEDIR'/saf_results/'${pop}'_autos_pop.out.sfs' \
+#-outname $BASEDIR'/saf_results/'${pop}'.out'
+
+# Sliding window analysis for theta
+#$thetaStat do_stat $BASEDIR'/saf_results/'${pop}'.out.thetas.idx' \
+#-win 50000 \
+#-step 50000 \
+#-outnames $BASEDIR'/saf_results/'${pop}'.50kb_thetasWindow.gz'
+

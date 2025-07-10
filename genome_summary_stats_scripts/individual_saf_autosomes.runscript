@@ -1,0 +1,16 @@
+#!/bin/bash
+
+
+# test first
+#bamlist='allbamspath_test.txt'
+#region='autosomes_39_chrom_unplaced_scaf.txt'
+#sbatch individual_saf_autosomes.jobscript $bamlist $region
+
+# run a for loop in the runscript
+BASEDIR='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/14-angsd'
+
+while read -r bam; do
+bamfile=$bam
+region='autosomes_39_chrom_unplaced_scaf.txt'
+sbatch individual_saf_autosomes.jobscript $bamfile $region
+done < "$BASEDIR/sample_lists/allbamspath_minus_test.txt"

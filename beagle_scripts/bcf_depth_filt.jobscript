@@ -1,0 +1,59 @@
+#!/bin/bash
+#SBATCH -p edwards        # Partition to submit to
+#SBATCH --ntasks 1              # Number of cores
+#SBATCH --cpus-per-task 8
+#SBATCH -t 03-00:00       # Runtime in days-hours:minutes
+#SBATCH --mem 40g         # Memory in MB
+#SBATCH -J bcf_to_plink          # job name
+#SBATCH -o log/bcf_to_plink.%A.out        # File to which standard out will be written
+#SBATCH -e log/bcf_to_plink.%A.err        # File to which standard err will be written
+#SBATCH --mail-type=FAIL           # Type of email notification- BEGIN,END,FAIL,ALL
+#SBATCH --mail-user=smorzechowski@g.harvard.edu  # Email to which notifications will be sent
+#SBATCH --account=wakeley_lab
+
+module load python
+source activate bcftools
+module purge
+
+#input=$1
+#input='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/14-angsd/results/Nleu_autos_lea.bcf'
+input='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/14-angsd/results/Nleu_autos_neoZ_lea_males.bcf'
+prefix=$(echo "$input" | sed 's:.*/::; s/.bcf//g')
+
+#prefix=$(basename "$input" .bcf)
+#prefix=`echo $input |sed 's/.bcf//g'`
+
+# only include snps and biallelic sites
+bcftools view -v snps --max-alleles 2 --threads $SLURM_CPUS_PER_TASK $input -Oz -o $prefix'.vcf.gz'
+
+module load python
+source activate vcftools
+module purge
+
+#bgzip $prefix'.vcf'
+tabix -p vcf $prefix'.vcf.gz'
+
+vcf=$prefix'.vcf.gz'
+
+vcftools --gzvcf $vcf --max-meanDP 9 --recode --stdout | bgzip > $prefix'_depth_filt.vcf.gz'
+
+#module load python
+#source activate bcftools
+#module purge
+
+# convert to plink
+
+#vcf_plink=$prefix'_depth_filt.vcf.gz'
+
+#plink --vcf $vcf_plink --make-bed \
+#--allow-extra-chr \
+#--set-missing-var-ids @:# \
+#--double-id \
+#--out $prefix'_depth_filt_plink' \
+
+
+#plink=$prefix'_depth_filt_plink'
+
+# get map file
+#awk '{print $1, $2, $3, $4}' $plink'.bim' > $plink'.map'
+#awk '{print $1, ".", $3, $4}' $plink'.bim' > $plink'.map'

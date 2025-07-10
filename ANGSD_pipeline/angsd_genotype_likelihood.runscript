@@ -1,0 +1,21 @@
+#!/bin/bash
+
+
+# Run ANGSD on W with females only, specifying haploid
+#bamlist='femalebamspath.txt'
+#region='neoW.txt'
+#out='Nleu_neoW_ANGSD_PCA'
+#sbatch angsd_genotype_likelihood.jobscript $bamlist $region $out
+
+
+# Run ANGSD on Z with all individuals
+#bamlist='allbamspath.txt'
+#region='neoZ.txt'
+#out='Nleu_neoZ_ANGSD_PCA'
+#sbatch angsd_genotype_likelihood.jobscript $bamlist $region $out
+
+# Run ANGSD on autos with all individuals
+bamlist='allbamspath.txt'
+region='autosomes.txt'
+out='Nleu_autos_all_ANGSD_PCA'
+sbatch angsd_genotype_likelihood.jobscript $bamlist $region $out

@@ -1,0 +1,24 @@
+#!/bin/bash
+
+# thin the newPAR in all individuals (excl 1st order)
+#input='Nleu_newPAR_rm_filt_excl_1st_order.beagle.gz'
+#output='Nleu_newPAR_rm_filt_excl_1st_order_thin_updated.beagle.gz'
+
+# thin the Z chromosome in males (excl 1st order)
+# redo this because I had accidentally included a female
+#input='Nleu_neoZ_males_rm_filt_excl_1st_order.beagle.gz'
+#output='Nleu_neoZ_males_rm_filt_excl_1st_order_thin.beagle.gz'
+
+# thin the autosomes in all individuals (excl 1st order and inversions)
+#input='Nleu_autos_rm_inversions_filt_excl_1st.beagle.gz'
+#output='Nleu_autos_rm_inversions_filt_excl_1st_thin.beagle.gz'
+
+# thin the autosomes in all individuals (excl 1st order) including inversions
+#input='Nleu_autos_rm_filt_excl_1st.beagle.gz'
+#output='Nleu_autos_rm_filt_excl_1st_thin.beagle.gz'
+
+# thin the autosomes to 1kb in all individuals used for LEA analyses
+input='Nleu_autos_lea.beagle.gz'
+output='Nleu_autos_lea_thin1kb.beagle.gz'
+
+sbatch thin_beagle.jobscript $input $output

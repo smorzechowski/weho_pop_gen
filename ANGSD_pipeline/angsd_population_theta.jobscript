@@ -1,0 +1,54 @@
+#!/bin/bash
+#SBATCH -N 1
+#SBATCH -n 1
+#SBATCH -c 24
+#SBATCH -p edwards,shared
+#SBATCH -e log/angsd_gl%A.err
+#SBATCH -o log/angsd_gl%A.out
+#SBATCH -J angsd_gl
+#SBATCH --mem=75g
+#SBATCH --time=72:00:00
+#SBATCH --account=wakeley_lab
+
+##########
+### run it as: sbatch Code/run_theta.sbatch <POP> <REGIONS>
+# POP corresponds to a bamlist
+# REGIONS corresponds to a regions file (see below for example)
+# Running ANGSD to get estimates of pi and tajimas D
+# Use no site filtering so that ANGSD can do genotype imputation on all sites
+# The denominator (nSites) will be less biased, ensuring a better estimate of pi for windows.
+# http://www.popgen.dk/angsd/index.php/Thetas,Tajima,Neutrality_tests
+#########
+
+
+POP=$1
+REGIONS=$2
+# autosomes vs sex chromosomes
+
+# Paths:
+OUT_DIR='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/14-angsd'
+ANC_DIR='/n/holylfs04/LABS/edwards_lab/Lab/smorzechowski/meliphagid/ReferenceAssemblies/Ecyanotis'
+BAM_DIR=''
+
+REG_FILE=/n//${REGIONS}.txt
+
+/n/home09/smorzechowski/bin/angsd/angsd \
+-bam ${BAM_DIR}/Bamlists/${POP}.bamlist \
+-rf $REG_FILE \
+-doSaf 1 \
+-uniqueOnly 1 \
+-remove_bads 1 \
+-trim 0 \
+-minMapQ 30 \
+-minQ 30 \
+-only_proper_pairs 0 \
+-anc ${ANC_DIR}/Ecyan_HiC_v3.0.fa \
+-GL 1 \
+-P 24 \
+-out ${POP}.out
+
+realSFS ${POP}.out.saf.idx -P 24 > ${POP}.out.sfs
+realSFS saf2theta ${POP}.out.saf.idx -sfs ${POP}.out.sfs -outname ${POP}.out
+thetaStat do_stat ${POP}.out.thetas.idx -win 50000 -step 50000 -outnames ${POP}.50kb_thetasWindow.gz
+
+#cp ${POP}.50kb_thetasWindow.gz.pestPG ${LAB}/Results/${REGIONS}_${POP}_50kb_thetasWindow.gz.pestPG

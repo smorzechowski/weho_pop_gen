@@ -1,0 +1,68 @@
+#!/bin/bash
+#SBATCH -p edwards,shared        # Partition to submit to
+#SBATCH --ntasks 1              # Number of tasks
+#SBATCH --cpus-per-task 6
+#SBATCH -t 03-00:00       # Runtime in days-hours:minutes
+#SBATCH --mem 25g         # Memory in MB
+#SBATCH -J run50kdxy          # job name
+#SBATCH -o log/run50kdxy.%A.out        # File to which standard out will be written
+#SBATCH -e log/run50kdxy.%A.err        # File to which standard err will be written
+#SBATCH --mail-type=FAIL           # Type of email notification- BEGIN,END,FAIL,ALL
+#SBATCH --mail-user=smorzechowski@g.harvard.edu  # Email to which notifications will be sent
+#SBATCH --account=wakeley_lab
+#SBATCH --array=1
+
+BASEDIR='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/14-angsd'
+OUTDIR='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/14-angsd/dxy_results'
+TMPDIR='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/14-angsd/dxy_tmp'
+ANGSD='/n/home09/smorzechowski/bin/angsd/angsd'
+REF='/n/holylfs04/LABS/edwards_lab/Lab/smorzechowski/meliphagid/ReferenceAssemblies/Nleucotis/Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded_PAR_masked.fasta'
+REF_FAI='/n/holylfs04/LABS/edwards_lab/Lab/smorzechowski/meliphagid/ReferenceAssemblies/Nleucotis/Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded_PAR_masked.fasta.fai'
+REF_DIR='/n/holylfs04/LABS/edwards_lab/Lab/smorzechowski/meliphagid/ReferenceAssemblies/Nleucotis'
+BED_DIR='/n/holylfs04/LABS/edwards_lab/Lab/smorzechowski/meliphagid/ReferenceAssemblies/Nleucotis/bed_windows'
+RM_DIR='/n/holylfs04/LABS/edwards_lab/Lab/smorzechowski/meliphagid/ReferenceAssemblies/Nleucotis/Nleu_final_genome_softmask'
+RM_DIR_SITES='/n/holylfs04/LABS/edwards_lab/Lab/smorzechowski/meliphagid/ReferenceAssemblies/Nleucotis/Nleu_final_genome_softmask/Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded_PAR_masked_sites_keep_1based.txt'
+REALSFS='/n/home09/smorzechowski/bin/angsd/misc/realSFS'
+
+# Get indexnumber for neoZ
+i=${SLURM_ARRAY_TASK_ID}
+d="scaffold_2_RagTag"
+chrom=$(echo $d | cut -f $i -d " ")
+
+echo "$chrom"
+
+# Population names
+a="arid"
+b="temperate"
+
+#$ANGSD -b $BASEDIR'/sample_lists/'$bamfile \
+#-ref $REF \
+#-anc $REF \
+#-rf $BASEDIR'/regions/'$region \
+#-out $BASEDIR'/saf_results/'${pop}'_autos_pop_saf' \
+#-minMapQ 30 \
+#-minQ 30 \
+#-doSaf 1 \
+#-GL 1 \
+#-P 8 \
+#-trim 0 \
+#-sites $RM_DIR'/Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded_PAR_masked_sites_keep_1based.txt' \
+#-remove_bads 1 \
+#-uniqueOnly 1 \
+#-only_proper_pairs 1 \
+#-minInd 9 \
+
+# Choose SAF file based on autosome or sex chromosome
+# for neoZ and same populations as Fst estimates
+
+cat "${BED_DIR}/${chrom}.50kb.bed" | \
+awk '{print "echo \\\""$1":"$2"-"$3"\\\" > '$TMPDIR'/'$i'.rf; "'\
+'"'$ANGSD' -b '$BASEDIR'/sample_lists/'$a'_malebamspath_excl_1st_order_Binya.txt -out '$TMPDIR'/tmp.'$a'.'$i'"'\
+'" -P 6 -doSaf 1 -GL 2 -rf '$TMPDIR'/'$i'.rf -minQ 30 -minMapQ 30"'\
+'" -minInd 5 -only_proper_pairs 1 -uniqueOnly 1 -remove_bads 1 -sites '$RM_DIR_SITES' -fai '$REF_FAI' -ref '$REF' -anc '$REF'; "'\
+'"'$ANGSD' -b '$BASEDIR'/sample_lists/'$b'_malebamspath_excl_1st_order_Walch_2nd_order_Binya.txt -out '$TMPDIR'/tmp.'$b'.'$i'"'\
+'" -P 6 -doSaf 1 -GL 2 -rf '$TMPDIR'/'$i'.rf -minQ 30 -minMapQ 30"'\
+'" -minInd 5 -only_proper_pairs 1 -uniqueOnly 1 -remove_bads 1 -sites '$RM_DIR_SITES' -fai '$REF_FAI' -ref '$REF' -anc '$REF'; "'\
+'"echo -n \\\""$1" "$2" "$3" \\\"; "'\
+'"'$REALSFS' '$TMPDIR'/tmp.'$a'.'$i'.saf.idx '$TMPDIR'/tmp.'$b'.'$i'.saf.idx; echo"}' | \
+xargs -n 80 | sh | awk 'NF > 4' > $OUTDIR"/"$a"."$b"."$chrom".50kwin.sfs"

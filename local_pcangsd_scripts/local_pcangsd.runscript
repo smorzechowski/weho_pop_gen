@@ -134,17 +134,28 @@
 
 # Run just the temperate males just to see what happens
 
-input='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/14-angsd/results/Nleu_neoZ_temperate_males_rm_filt.beagle.gz'
-store='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/16-local_pcangsd/results/Nleu_neoZ_temperate_males_rm_filt.zarr'
-zarr='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/16-local_pcangsd/results/Nleu_neoZ_temperate_males_rm_filt_results.zarr'
+#input='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/14-angsd/results/Nleu_neoZ_temperate_males_rm_filt.beagle.gz'
+#store='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/16-local_pcangsd/results/Nleu_neoZ_temperate_males_rm_filt.zarr'
+#zarr='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/16-local_pcangsd/results/Nleu_neoZ_temperate_males_rm_filt_results.zarr'
+#tmp='/n/home09/smorzechowski/tmp_local_pcangsd'
+#prefix='Nleu_neoZ_temperate_males'
+#outdir="/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/16-local_pcangsd/plots/"
+#col=0
+#pop='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/16-local_pcangsd/temperate_male_pops.tsv'
+#wind=50000
+#var=500
+
+# Run the unplaced scaffolds!
+input='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/14-angsd/results/pri_ptg000015l_rm_filt.beagle.gz'
+store='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/16-local_pcangsd/results/pri_ptg000015l_rm_filt.zarr'
+zarr='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/16-local_pcangsd/results/pri_ptg000015l_rm_filt_results.zarr'
 tmp='/n/home09/smorzechowski/tmp_local_pcangsd'
-prefix='Nleu_neoZ_temperate_males'
+prefix='pri_ptg000015l'
 outdir="/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/16-local_pcangsd/plots/"
 col=0
-pop='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/16-local_pcangsd/temperate_male_pops.tsv'
-wind=50000
-var=500
-
+pop='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/16-local_pcangsd/all_samples_pops.tsv'
+wind=10000
+var=50
 
 sbatch local_pcangsd.jobscript $input $store $zarr $tmp $prefix $outdir $col $pop $wind $var
 

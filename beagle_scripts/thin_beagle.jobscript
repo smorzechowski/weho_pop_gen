@@ -1,0 +1,22 @@
+#!/bin/bash
+#SBATCH -p edwards        # Partition to submit to
+#SBATCH -n 1              # Number of cores
+#SBATCH -t 01-00:00       # Runtime in days-hours:minutes
+#SBATCH --mem 20g         # Memory in MB
+#SBATCH -J thin_beagle          # job name
+#SBATCH -o log/thin.%A.out        # File to which standard out will be written
+#SBATCH -e log/thin.%A.err        # File to which standard err will be written
+#SBATCH --mail-type=FAIL           # Type of email notification- BEGIN,END,FAIL,ALL
+#SBATCH --mail-user=smorzechowski@g.harvard.edu  # Email to which notifications will be sent
+#SBATCH --account=wakeley_lab
+
+
+module load python
+
+input=$1
+output=$2
+dir='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/14-angsd/results'
+#distance=25000
+distance=1000
+
+python /n/home09/smorzechowski/bin/thin_beagle_updated.py $dir/$input $dir/$output $distance
