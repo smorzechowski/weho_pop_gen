@@ -506,6 +506,42 @@ java -Xmx30G \
 ```
 
 ### Indel realignment
+
+Next, following the excellent tutorial on analyzing lcWGS data from the Therkildsen Lab (see https://github.com/nt246/lcwgs-guide-tutorial), I performed indel realignment. Often short reads are mismapped in the vicinity of indels, which can lead to spurious variant calling. Thus, the GATK tools `RealignerTargetCreater` which identifies all indel regions, and `IndelRealigner` which does the realignment, are dedicated to fixing mismapping around indels. This is important for ANGSD, however, these tools are no longer supported in GATK > 3.7, thus you have to go to the archives to download and use the correct version: `GATK 3.7`. 
+
+```
+## Create dict file for reference genome
+#module load jdk/20.0.1-fasrc01
+#PICARD='/n/home09/smorzechowski/bin/picard/build/libs/picard.jar'
+#java -jar $PICARD CreateSequenceDictionary \
+#      R=$GENOME \
+#      O=/n/holylfs04/LABS/edwards_lab/Lab/smorzechowski/meliphagid/ReferenceAssemblies/Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded_PAR_masked.dict
+
+## Realign around indels
+# This is done across all samples at once
+
+## Create list of potential indels
+# this can be multithreaded, but IndelRealigner cannot
+
+java -Xmx60G -jar /n/home09/smorzechowski/.conda/envs/gatk_3.7/opt/gatk-3.7/GenomeAnalysisTK.jar \
+-T RealignerTargetCreator \
+-R $GENOME \
+-I $BAMLIST \
+-o $OUTDIR'/all_samples_for_indel_realigner_incl_2final.intervals' \
+-drf BadMate \
+-nt 20
+
+
+## Run the indel realigner tool
+java -Xmx25G -jar /n/home09/smorzechowski/.conda/envs/gatk_3.7/opt/gatk-3.7/GenomeAnalysisTK.jar \
+-T IndelRealigner \
+-R $GENOME \
+-I $BAMDIR/${sample}_bwa_dedup_clip_sort_fixmate.bam \
+-targetIntervals $OUTDIR'/all_samples_for_indel_realigner_incl_2final.intervals' \
+--consensusDeterminationModel USE_READS  \
+--nWayOut _realigned_final.bam
+```
+
 ### Estimating coverage to verify sex chromosome complement
 ### Calculating genotype likelihoods
 ### PCA and population structure
