@@ -543,6 +543,102 @@ java -Xmx25G -jar /n/home09/smorzechowski/.conda/envs/gatk_3.7/opt/gatk-3.7/Geno
 ```
 
 ### Estimating coverage to verify sex chromosome complement
+
+Next, before you actually calculate genotype likelihoods, it is important to verify the sex chromosome complement of all individuals you sequenced. Misclassification can happen, especially with species that are monomorphic or monochromatic like White-eared Honeyeaters. Separating males (homogametic ZZ) and females (heterogametic ZW) is particularly important when doing variant calling on the sex chromosomes because males are diploid for Z and females are haploid for both Z and W. This will lead to spurious variant calling if you combine both sexes and try to call variants on the Z, for instance. What I was suprised to find out, however, is that ANGSD does not appear to be able to accomodate variant calling on haploid Z or W chromosomes, which is quite unfortunate. This meant that I had to restrict my samples to males when conducting analyses involving the Z chromosome.
+
+An easy way to verify the sex chromosome complement is to estimate coverage of reads mapping to autosomes, Z, and W chromosomes for each individual. If autosomal coverage = Z coverage, I characterize this as a ZZ male individual. If autosomal coverage = 2 x Z coverage, this is characterized as a ZW individual because Z coverage is half that of autosomes. Similarly if W coverage is around zero, that is also characterized as a ZZ male individual. Finally, if autosomal coverage = 2 x W coverage, that is also characterized as a ZW female individual, the same as you would expect with Z coverage in females. 
+
+It is worth noting that sex chromosome complement does not necessarily always align with other sex variables, depending on the individual and the species. However, for the purpose of this work on sex chromosomes, I usually talk about sex in the context of the sex chromosome complement. 
+
+I used qualimap to estimate read depth.
+
+```
+module load python
+source activate /n/holylabs/LABS/edwards_lab/Users/smorzechowski/conda/qualimap
+
+sample=$1
+
+bam_path=/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/06-bwa/clip
+out_path=/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/10-qualimap/qualimap_final
+
+qualimap bamqc -bam ${bam_path}/${sample}_bwa_dedup_clip_sort_fixmate.bam -sd -c -nw 400 -hm 3 -outdir $out_path/${sample} --java-mem-size=25G
+
+```
+
+Then, I extracted the coverage information using an awk command. 
+
+```
+#!/bin/bash/
+
+sample_names='samplenames_all74.txt'
+
+cat $sample_names |
+while read sample; do
+awk '/>>>>>>> Coverage per contig/{flag=1;next}/ /{flag=0}flag' ./qualimap_final/${sample}/genome_results.txt | \
+awk '{print $1,$2,$3,$4,$5}' | awk '$(NF+1)= "'$sample'"' > ${sample}_coverage_results_final.txt
+done
+
+cd results_final
+cat *final.txt > all_coverage_results_final.txt
+awk 'NF >1' all_coverage_results_final.txt > all_coverage_results_cleaned_final.txt
+
+```
+
+Finally, in R, I plotted the coverage per individual for an autosome (Chr 1), and the W chromosome.
+
+```
+# all_coverage_results_cleaned_final.txt contains the two individuals from Moonbi sequenced seperately
+
+data <- read.table("all_coverage_results_cleaned_final.txt",header=F,sep=" ",comment.char = "")
+
+data_filt <- data[data$V1=="scaffold_5_RagTag" |
+                  data$V1=="scaffold_2_RagTag" |
+                  data$V1=="scaffold_1_RagTag",]
+
+
+autos <- data[!is.element(data$V1,c("scaffold_2_RagTag","scaffold_5_RagTag")),]
+
+auto_sum <- autos %>% group_by(V6)%>%
+  summarise(mean_coverage = mean(V4))
+
+mean(auto_sum$mean_coverage)
+max(auto_sum$mean_coverage)
+min(auto_sum$mean_coverage)
+
+
+auto1a <- data[data$V1=="scaffold_1_RagTag",]
+auto1a_sum <- auto1a %>% group_by(V6)%>%
+  summarise(mean_coverage = mean(V4))
+
+mean(auto1a_sum$mean_coverage)
+max(auto1a_sum$mean_coverage)
+min(auto1a_sum$mean_coverage)
+
+
+
+ggplot(data_filt,aes(V6,V4))+
+  geom_bar(stat='identity')+
+  facet_grid(.~V1)
+
+# plot the W chromosome coverage
+data_W <- data[data$V1=="scaffold_5_RagTag",]
+ggplot(data_W,aes(V6,V4))+
+  geom_bar(stat='identity')+
+  coord_flip()+
+  ylab('Neo-W Coverage (excluding new PAR)')+
+  xlab("")
+
+# plot the autosome coverage
+data_1a <- data[data$V1=="scaffold_1_RagTag",]
+ggplot(data_1a,aes(V6,V4))+
+  geom_bar(stat='identity')+
+  coord_flip()+
+  ylab('1A coverage (autosomal)')+
+  xlab("")
+
+```
+
+
 ### Calculating genotype likelihoods
 ### PCA and population structure
 ### Local PCA with local_pcangsd
