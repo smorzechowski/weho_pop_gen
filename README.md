@@ -452,9 +452,9 @@ ASSUME_SORTED=true \
 
 ```
 
-Next, I needed to softclip overlapping reads for downstream ANGSD analyses because ANGSD is not able to account for the fact that forward and reverse reads may be overlapping unless they are explicitly flagged as such. ANGSD tutorials generally recommend `bamUtil clipOverlap` for this, but I was finding that running this software created a lot of invalid CIGAR strings, etc. when I ran `ValidateSamFile`. It may have been because of software conflict, I'm not sure. [Others](https://github.com/statgen/bamUtil/issues/72) have discovered this issue as well. Regardless, I found another way to softclip overlapping reads with `fgbio` [ClipBam](https://fulcrumgenomics.github.io/fgbio/tools/latest/ClipBam.html), which seems to have worked great! 
+Next, I needed to clip overlapping reads for downstream ANGSD analyses because ANGSD is not able to account for the fact that forward and reverse reads may be overlapping unless they are explicitly flagged as such. ANGSD tutorials generally recommend `bamUtil clipOverlap` for this, but I was finding that running this software created a lot of invalid CIGAR strings, etc. when I ran `ValidateSamFile`. It may have been because of software conflict, I'm not sure. [Others](https://github.com/statgen/bamUtil/issues/72) have discovered this issue as well. Regardless, I found another way to clip overlapping reads with `fgbio` [ClipBam](https://fulcrumgenomics.github.io/fgbio/tools/latest/ClipBam.html), which seems to have worked great! 
 
-Note: I chose to softclip the overlaps rather than hardclipping. From what I understand, ANGSD can read the CIGAR flags and ignore overlapping regions accordingly. A more conservative option is hardclipping all overlaps. 
+Note: I chose to softclip the overlaps rather than hardclipping. From what I understand, ANGSD can read the CIGAR flags and ignore overlapping softclipped regions accordingly. A more conservative option is hardclipping all overlaps, however, I was trying to replicate the behavior of `bamUtil clipOverlap`, which to the best of my knowledge and digging, does do softclipping. However, if anyone finds any information to the contrary, I am happy to stand corrected!
 
 ```
 
@@ -462,7 +462,7 @@ Note: I chose to softclip the overlaps rather than hardclipping. From what I und
 # remove -u which uncompresses, I don't think we want that
 samtools sort -n -@ $CPU $DEDUP_DIR/${SAMPLE}_bwa_dedup.bam -o $DEDUP_DIR/${SAMPLE}_bwa_dedup_namesort.bam
 
-# soft clip reads using ClipBam from fgbio
+# softclip reads using ClipBam from fgbio
 fgbio -Xmx45G ClipBam \
     -i $DEDUP_DIR/${SAMPLE}_bwa_dedup_namesort.bam \
     -o $CLIP_DIR/${SAMPLE}_bwa_dedup_clip.bam \
