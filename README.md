@@ -452,11 +452,11 @@ ASSUME_SORTED=true \
 
 ```
 
-Next, I needed to soft clip reads for downstream ANGSD analyses because ANGSD is not able to account for the fact that forward and reverse reads may be overlapping. ANGSD tutorials generally recommend `bamUtil clipOverlap` for this, but I was finding that running this software created a lot of invalid CIGAR strings, etc. when I ran `ValidateSamFile`. It may have been because of software conflict, I'm not sure. [Others](https://github.com/statgen/bamUtil/issues/72) have discovered this issue as well. Regardless, I found another way to softclip reads with `fgbio ClimBam`, which seems to have worked great! 
+Next, I needed to soft clip reads for downstream ANGSD analyses because ANGSD is not able to account for the fact that forward and reverse reads may be overlapping. ANGSD tutorials generally recommend `bamUtil clipOverlap` for this, but I was finding that running this software created a lot of invalid CIGAR strings, etc. when I ran `ValidateSamFile`. It may have been because of software conflict, I'm not sure. [Others](https://github.com/statgen/bamUtil/issues/72) have discovered this issue as well. Regardless, I found another way to softclip reads with `fgbio` [ClimBam](https://fulcrumgenomics.github.io/fgbio/tools/latest/ClipBam.html), which seems to have worked great! 
 
 ```
 
-# need to sort reads by query name for fgbio ClipBam
+# need to sort reads by query name for fgbio ClipBam - see user manual
 # remove -u which uncompresses, I don't think we want that
 samtools sort -n -@ $CPU $DEDUP_DIR/${SAMPLE}_bwa_dedup.bam -o $DEDUP_DIR/${SAMPLE}_bwa_dedup_namesort.bam
 
