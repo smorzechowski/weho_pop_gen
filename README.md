@@ -435,7 +435,7 @@ samtools flagstat $MERGE_DIR/${SAMPLE}_bwa_merge_sort.bam > $MERGE_DIR/${SAMPLE}
 
 ### Removing duplicates and clipping reads
 
-Next, it is necessary to remove PCR and optical duplicates, which are a normal part of the Illumina short-read sequencing process. I used Picard to mark and *remove* the duplicates because I was not sure whether ANGSD can interpret flags in the same way that GATK does. For GATK, it is sufficient to mark reads as being duplicates, rather than removing them; GATK will not include them in the variant calling process.
+Next, it is necessary to remove PCR and optical duplicates, which are a normal part of the Illumina short-read sequencing process. I used Picard to mark and *remove* the duplicates (`REMOVE_DUPLICATES=true`) because I believe ANGSD does *not* interpret flags in the same way that GATK does. For GATK, it is sufficient to mark reads as being duplicates, rather than removing them; once flagged, GATK will not include them in the variant calling process.
 
 ```
 # Mark duplicates with Picard
@@ -452,11 +452,11 @@ ASSUME_SORTED=true \
 
 ```
 
-Next, I needed to soft clip reads for downstream ANGSD analyses because ANGSD is not able to account for the fact that forward and reverse reads may be overlapping. ANGSD tutorials generally recommend `bamUtil clipOverlap` for this, but I was finding that running this software created a lot of badmate flags, etc. when I ran `ValidateSamFile`. It may have been because of software conflict, I'm not sure. Regardless, I found another way to softclip reads with `fgbio ClimBam`, which seems to have worked great! 
+Next, I needed to soft clip reads for downstream ANGSD analyses because ANGSD is not able to account for the fact that forward and reverse reads may be overlapping. ANGSD tutorials generally recommend `bamUtil clipOverlap` for this, but I was finding that running this software created a lot of invalid CIGAR strings, etc. when I ran `ValidateSamFile`. It may have been because of software conflict, I'm not sure. [Others](https://github.com/statgen/bamUtil/issues/72) have discovered this issue as well. Regardless, I found another way to softclip reads with `fgbio ClimBam`, which seems to have worked great! 
 
 ```
 
-# sort reads by query name for fgbio ClipBam
+# need to sort reads by query name for fgbio ClipBam
 # remove -u which uncompresses, I don't think we want that
 samtools sort -n -@ $CPU $DEDUP_DIR/${SAMPLE}_bwa_dedup.bam -o $DEDUP_DIR/${SAMPLE}_bwa_dedup_namesort.bam
 
