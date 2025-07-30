@@ -435,7 +435,7 @@ samtools flagstat $MERGE_DIR/${SAMPLE}_bwa_merge_sort.bam > $MERGE_DIR/${SAMPLE}
 
 ### Removing duplicates and clipping reads
 
-Next, it is necessary to remove PCR and optical duplicates, which are a normal part of the Illumina short-read sequencing process. I used Picard to mark and *remove* the duplicates (`REMOVE_DUPLICATES=true`) because I believe ANGSD does *not* interpret flags in the same way that GATK does. For GATK, it is sufficient to mark reads as being duplicates, rather than removing them; once flagged, GATK will not include them in the variant calling process.
+Next, it is necessary to flag/remove PCR and optical duplicates, which are a normal part of the Illumina short-read sequencing process. I used Picard to mark and *remove* the duplicates (`REMOVE_DUPLICATES=true`) because I was not certain if ANGSD interprets flags in the same way that GATK does. For GATK, it is sufficient to mark reads as being duplicates, rather than removing them; once flagged, GATK will not include them in the variant calling process. Upon further digging, it seems that either flagging or removing duplicates works in ANGSD as well as GATK, I just went with the conservative option of removing them altogether.
 
 ```
 # Mark duplicates with Picard
@@ -452,7 +452,9 @@ ASSUME_SORTED=true \
 
 ```
 
-Next, I needed to soft clip reads for downstream ANGSD analyses because ANGSD is not able to account for the fact that forward and reverse reads may be overlapping. ANGSD tutorials generally recommend `bamUtil clipOverlap` for this, but I was finding that running this software created a lot of invalid CIGAR strings, etc. when I ran `ValidateSamFile`. It may have been because of software conflict, I'm not sure. [Others](https://github.com/statgen/bamUtil/issues/72) have discovered this issue as well. Regardless, I found another way to softclip reads with `fgbio` [ClimBam](https://fulcrumgenomics.github.io/fgbio/tools/latest/ClipBam.html), which seems to have worked great! 
+Next, I needed to softclip overlapping reads for downstream ANGSD analyses because ANGSD is not able to account for the fact that forward and reverse reads may be overlapping unless they are explicitly flagged as such. ANGSD tutorials generally recommend `bamUtil clipOverlap` for this, but I was finding that running this software created a lot of invalid CIGAR strings, etc. when I ran `ValidateSamFile`. It may have been because of software conflict, I'm not sure. [Others](https://github.com/statgen/bamUtil/issues/72) have discovered this issue as well. Regardless, I found another way to softclip overlapping reads with `fgbio` [ClimBam](https://fulcrumgenomics.github.io/fgbio/tools/latest/ClipBam.html), which seems to have worked great! 
+
+Note: I chose to softclip the overlaps rather than hardclipping. From what I understand, ANGSD can read the CIGAR flags and ignore overlapping regions accordingly. A more conservative option is hardclipping all overlaps. 
 
 ```
 
