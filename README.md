@@ -452,7 +452,7 @@ ASSUME_SORTED=true \
 
 ```
 
-Next, I needed to softclip overlapping reads for downstream ANGSD analyses because ANGSD is not able to account for the fact that forward and reverse reads may be overlapping unless they are explicitly flagged as such. ANGSD tutorials generally recommend `bamUtil clipOverlap` for this, but I was finding that running this software created a lot of invalid CIGAR strings, etc. when I ran `ValidateSamFile`. It may have been because of software conflict, I'm not sure. [Others](https://github.com/statgen/bamUtil/issues/72) have discovered this issue as well. Regardless, I found another way to softclip overlapping reads with `fgbio` [ClimBam](https://fulcrumgenomics.github.io/fgbio/tools/latest/ClipBam.html), which seems to have worked great! 
+Next, I needed to softclip overlapping reads for downstream ANGSD analyses because ANGSD is not able to account for the fact that forward and reverse reads may be overlapping unless they are explicitly flagged as such. ANGSD tutorials generally recommend `bamUtil clipOverlap` for this, but I was finding that running this software created a lot of invalid CIGAR strings, etc. when I ran `ValidateSamFile`. It may have been because of software conflict, I'm not sure. [Others](https://github.com/statgen/bamUtil/issues/72) have discovered this issue as well. Regardless, I found another way to softclip overlapping reads with `fgbio` [ClipBam](https://fulcrumgenomics.github.io/fgbio/tools/latest/ClipBam.html), which seems to have worked great! 
 
 Note: I chose to softclip the overlaps rather than hardclipping. From what I understand, ANGSD can read the CIGAR flags and ignore overlapping regions accordingly. A more conservative option is hardclipping all overlaps. 
 
