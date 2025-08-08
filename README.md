@@ -27,6 +27,9 @@ The software and programs used in this project include:
 - [R (v4.3.2)](https://www.r-project.org/)
 
 
+I was greatly assisted by helpful discussion with Dr. Elsie Shogren and her excellent [github repository](https://github.com/ehshogren/MyzomelaPopulationGenomics), [lsWGS tutorials](https://github.com/nt246/lcwgs-guide-tutorial) from the Therkildsen Lab, as well as a custom python script from Dr. Drew Schield , recommended to me  by Elsie -- which     
+
+
 # Contents
 - [Jobscripts and runscripts](#jobscripts-and-runscripts)
 - [Order of operations for each pipeline](#order-of-operations-for-each-pipeline)
