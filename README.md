@@ -50,7 +50,7 @@ I was greatly assisted by helpful discussion with Dr. Elsie Shogren and her exce
   - [Split genome into intervals](#split-genome-into-intervals)
   - [Running haplotype caller](#running-haplotype-caller)
   - [Setting up genomicsDB for import](#setting-up-genomicsdb-for-import)
-  - [Running genotypeGVCF]#(running-genotypeGVCF)
+  - [Running genotypeGVCF](#running-genotypeGVCF)
 - [Genotype-environment association analysis](#genotype-environment-association-analysis)
   - [sNMF analysis to estimate K ancestry proportions](#snmf-analysis-to-estimate-k-ancestry-proportions)
   - [LEA analysis](#lea-analysis)
