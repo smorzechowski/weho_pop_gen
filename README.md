@@ -2,7 +2,7 @@
 
 This readme provides an overview of the genomic analyses conducted in this project focusing on neo-sex chromosomes in White-eared Honeyeaters. I primarily ran the ANGSD pipeline for variant calling because I sequenced 72 individuals at an average depth of 6x coverage, which is in the low-to-mid coverage range suited for the genotype likelihood framework of ANGSD. Howevever, I include my scripts for hard-calling variants with GATK as well. I deployed a manual variant calling pipeline for the purpose of robustly analyzing variants on neo-sex chromosomes in males and females. 
 
-I am quite excited by automated Snakemake pipelines like [snpArcher](https://github.com/harvardinformatics/snpArcher) (implementing GATK) and [PopGLen](https://github.com/zjnolen/PopGLen) (implementing ANGSD). I believe snpArcher has an option for specifying ploidy, which is excellent, but I haven't yet implemented it or checked out the capabilities of PopGLen. I think routinely including sex chromosomes in population genomic and conservation genomic analyses would be a big step forward, especially if they could easily and fully incorporated into automated pipelines, which researchers with less familiarity with sex chromosomes could easily utilize and understand.   
+I am quite excited by new automated Snakemake pipelines like [snpArcher](https://github.com/harvardinformatics/snpArcher) (implementing GATK) and [PopGLen](https://github.com/zjnolen/PopGLen) (implementing ANGSD). I believe snpArcher has an option for specifying ploidy, which is excellent, but I haven't yet implemented it or checked out the capabilities of PopGLen. I think routinely including sex chromosomes in population genomic and conservation genomic analyses would be a big step forward, especially if they could be fully incorporated into automated pipelines, which researchers with less familiarity with sex chromosomes could easily utilize and understand.   
 
 
 The software and programs used in this project include:
@@ -27,7 +27,7 @@ The software and programs used in this project include:
 - [R (v4.3.2)](https://www.r-project.org/)
 
 
-I was greatly assisted by helpful discussion with Dr. Elsie Shogren and her excellent [github repository](https://github.com/ehshogren/MyzomelaPopulationGenomics), [lsWGS tutorials](https://github.com/nt246/lcwgs-guide-tutorial) from the Therkildsen Lab, as well as a custom python script from Dr. Drew Schield , recommended to me  by Elsie -- which     
+I was greatly assisted by helpful discussion with Dr. Elsie Shogren and her excellent [github repository](https://github.com/ehshogren/MyzomelaPopulationGenomics), [lsWGS tutorials](https://github.com/nt246/lcwgs-guide-tutorial) from the Therkildsen Lab, as well as a [custom python script](https://github.com/drewschield/Z-chromosome_analysis_hirundo/blob/main/scripts/identify_female_Zhet_sites.py) by Dr. Drew Schield, recommended to me  by Elsie -- which parses a VCF file from GATK to identify and remove spurious heterozygote variant calls on the Z chromosome in females. Elsie adapted this script to identify spurious calls on the W chromosome in females as well.        
 
 
 # Contents
