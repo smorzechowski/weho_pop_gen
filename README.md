@@ -27,7 +27,7 @@ The software and programs used in this project include:
 - [R (v4.3.2)](https://www.r-project.org/)
 
 
-I was greatly assisted by helpful discussion with Dr. Elsie Shogren and her excellent [github repository](https://github.com/ehshogren/MyzomelaPopulationGenomics), [lsWGS tutorials](https://github.com/nt246/lcwgs-guide-tutorial) from the Therkildsen Lab, as well as a [custom python script](https://github.com/drewschield/Z-chromosome_analysis_hirundo/blob/main/scripts/identify_female_Zhet_sites.py) by Dr. Drew Schield, recommended to me  by Elsie -- which parses a VCF file from GATK to identify and remove spurious heterozygote variant calls on the Z chromosome in females. Elsie adapted this script to identify spurious calls on the W chromosome in females as well.        
+I was greatly assisted by helpful discussion with Dr. Elsie Shogren and her excellent [github repository](https://github.com/ehshogren/MyzomelaPopulationGenomics), the comprehensive [lsWGS tutorials](https://github.com/nt246/lcwgs-guide-tutorial) from the Therkildsen Lab, as well as a [custom python script](https://github.com/drewschield/Z-chromosome_analysis_hirundo/blob/main/scripts/identify_female_Zhet_sites.py) by Dr. Drew Schield, recommended to me  by Elsie. This script parses a VCF file from GATK to identify and remove spurious heterozygote variant calls on the Z chromosome in females. Elsie adapted this script to identify and remove spurious heterozygote calls on the W chromosome in females as well.        
 
 
 # Contents
