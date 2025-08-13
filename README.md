@@ -680,9 +680,102 @@ python /n/home09/smorzechowski/local_pcangsd_script.py $input $store $zarr $tmp 
 done
 ```
 
-
-
 ### Creating beagle files for LEA
+
+First, I ran ANGSD with all the necessary filters as well as the `-doBcf 1` option to create the .bcf file format needed for converting to .vcf.gz for the imputation program BEAGLE.
+
+```
+$ANGSD -b $BASEDIR'/sample_lists/'$bamlist \
+-ref $REF \
+-rf $BASEDIR'/regions/'$region \
+-out $BASEDIR'/results/'$out \
+-minMapQ 30 \
+-minQ 30 \
+-doMaf 1 \
+-minMaf 0.05 \
+-SNP_pval 1e-6 \
+-GL 1 \
+-doGlf 2 \
+-doMajorMinor 1 \
+-skipTriallelic 1 \
+-doPost 1 \
+-doIBS 1 \
+-doCounts 1 \
+-doCov 1 \
+-makeMatrix 1 \
+-P 8 \
+-sites $RM_DIR'/Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded_PAR_masked_sites_keep_1based.txt' \
+-remove_bads 1 \
+-uniqueOnly 1 \
+-minInd 36 \
+-doBcf 1 \
+```
+
+I filtered for biallelic SNPs and converted the bcf format to vcf.gz with bcftools and then filtered for the desired maximum mean depth. 
+
+```
+module load python
+source activate bcftools
+module purge
+
+#input=$1
+#input='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/14-angsd/results/Nleu_autos_lea.bcf'
+input='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/14-angsd/results/Nleu_autos_neoZ_lea_males.bcf'
+prefix=$(echo "$input" | sed 's:.*/::; s/.bcf//g')
+
+#prefix=$(basename "$input" .bcf)
+#prefix=`echo $input |sed 's/.bcf//g'`
+
+# only include snps and biallelic sites
+bcftools view -v snps --max-alleles 2 --threads $SLURM_CPUS_PER_TASK $input -Oz -o $prefix'.vcf.gz'
+
+module load python
+source activate vcftools
+module purge
+
+
+#bgzip $prefix'.vcf'
+tabix -p vcf $prefix'.vcf.gz'
+
+vcf=$prefix'.vcf.gz'
+
+vcftools --gzvcf $vcf --max-meanDP 9 --recode --stdout | bgzip > $prefix'_depth_filt.vcf.gz'
+
+```
+
+Then, with BEAGLE, I imputed variants for autosomes (all individuals) and autosomes plus the neo-Z chromosome (males only).
+
+```
+bin='/n/home09/smorzechowski/bin'
+module load jdk/20.0.1-fasrc01
+
+input=$1
+#map=$2
+out=$2
+
+java -Xss5m -Xmx80g -jar $bin/beagle.27Jan18.7e1.jar \
+gl=$input \
+out=$out \
+nthreads=16 \
+```
+
+
+Run script: 
+```
+#!/bin/bash
+
+# Run for autosomes
+#input='Nleu_autos_lea_depth_filt.vcf.gz'
+#map='Nleu_autos_lea_depth_filt_plink_v2.map'
+#output='Nleu_autos_lea_depth_filt_imputed'
+#sbatch beagle_imputation.jobscript $input $output
+
+# Run for males: autos and neoZ
+input='Nleu_autos_neoZ_lea_males_depth_filt.vcf.gz'
+output='Nleu_autos_neoZ_lea_males_depth_filt_imputed'
+sbatch beagle_imputation.jobscript $input $output
+
+```
 ### Genome-wide summary statistics
 
 ## GATK pipeline
