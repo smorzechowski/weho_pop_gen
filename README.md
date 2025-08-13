@@ -653,11 +653,13 @@ ggplot(data_1a,aes(V6,V4))+
 
 ### Calculating genotype likelihoods
 ### PCA and population structure
-### Local PCA with local_pcangsd
+
+### Local PCA with `local_pcangsd`
 
 The python script I adapted from [Alexis Simon](https://www.normalesup.org/~asimon/projects/local_pcangsd.html) to combine PCAngsd and lostruct can be found [here](https://github.com/smorzechowski/weho_pop_gen/blob/master/local_pcangsd_scripts/local_pcangsd_script.py).
 
 Basically, the python script runs PCAngsd in pre-defined windows (e.g. a window size of 50,000 bp with a minimum number of 500 variants, for example) across each scaffold/chromosome. It calculates the pair-wise distance between windows, summarizes the variation with Principal Coordinates Analysis (PCoA), and plots the first two coordinates (MDS1 and MDS2) in multivariate space. It finds outlier regions where the MDS scores are different from the rest of the chromosome/scaffold. It then merges those specified outlier windows, runs PCAngsd on this region, and plots the first two PCA coordinates to visualize the population structure in this outlier region. A PCA with three distinct clusters defined across PC1 and no differentiation across PC2 is a potential indication of an inversion polymorphism.  
+
 This program requires a beagle file as input. I split the beagle files by chromosomes/scaffold and ran local_pcangsd separately on each. The input is compressed in zarr format, and the results are written to a zarr file. 
 
 ```
