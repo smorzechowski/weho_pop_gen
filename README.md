@@ -832,6 +832,92 @@ dev.off()
 
 ### LEA analysis
 
+For running latent factor mixed models in the R package `LEA` using the `lfmm2()` function, I first had to convert the input files to .geno format (`ped2geno`). I also converted the text file of environmental predictors to .env format with `write.env()`.
+
+The environmental data can be summarized into the first two principal component axes or specific, relevant variables can be selected from the BioClim database to test for genotype-environment associations. 
+
+The most basic LEA analysis consists of reading in the data, running the models with specified values of K (the number of latent factors), computing the multivariate tests of significance and adjusting the p-values with the BH procedure. 
+
+
+```
+
+gen.imp <- read.geno("Nleu_autos_lea_depth_filt_imputed_thin_plink.geno")
+
+dim(gen.imp)
+
+#pred <- read.env("Nleu_bioclim_variables_65ind_autos_ordered_noheader.env")
+pred <- read.env("Nleu_bioclim_PC1_PC2_65ind_autos.env")
+
+# Run LEA models
+mod2 <- lfmm2(input = gen.imp, env = pred, K = 2)
+#mod3 <- lfmm2(input = gen.imp, env = pred, K = 3)
+#mod4 <- lfmm2(input = gen.imp, env = pred, K = 4)
+
+# Run multivariate tests, accounting for shared variance (full covariance matrix)
+# K=2
+pv2.full <- lfmm2.test(object = mod2,
+                 input = gen.imp,
+                 env = pred,
+                 full=TRUE)
+
+# Calculate adjusted pvalues for the full model
+pv2.full.q.values <- p.adjust(pv2.full$pvalues, method = "BH")
+#pv3.full.q.values <- p.adjust(pv3.full$pvalues, method = "BH")
+
+```
+
+The most basic plotting of the results can be done in base R. 
+
+```
+
+# Target regions across the genome: chromosomes with putative inversions
+
+Chr4_target = seq(from = 474812, to = 583562,by=1)
+Chr6_target = seq(from = 583563, to = 650966,by=1)
+Chr8_target = seq(from = 700446, to = 757547,by=1)
+Chr9_target = seq(from = 757547, to = 773605,by=1)
+Chr10_target = seq(from = 139148, to = 158627,by=1)
+Chr13_target = seq(from = 172691, to = 201522,by=1)
+Chr14_target = seq(from = 201523, to = 220168,by=1)
+Chr15_target = seq(from = 220169, to = 230157,by=1)
+Chr16_target = seq(from = 230158, to = 247440,by=1)
+Chr17_target = seq(from = 247441, to = 263872,by=1)
+Chr18_target = seq(from = 263872, to = 272643,by=1)
+Con15l_target = seq(from = 773606, to = 789999,by=1)
+Con45l_target = seq(from = 790000, to = 807105,by=1)
+
+# Plot of all variables combined with BH correction K=2
+plot(-log10(pv2.full.q.values), col = "grey", cex = .4, pch = 19)
+abline(h = -log10(0.0000005), lty = 2, col = "darkred")
+
+points(Chr4_target, -log10(pv2.full.q.values[Chr4_target]), col = "red")
+points(Chr6_target, -log10(pv2.full.q.values[Chr6_target]), col = "blue")
+points(Chr8_target, -log10(pv2.full.q.values[Chr8_target]), col = "lightblue")
+points(Chr9_target, -log10(pv2.full.q.values[Chr9_target]), col = "magenta")
+points(Chr10_target, -log10(pv2.full.q.values[Chr10_target]), col = "orange")
+points(Chr13_target, -log10(pv2.full.q.values[Chr13_target]), col = "green")
+points(Chr14_target, -log10(pv2.full.q.values[Chr14_target]), col = "yellow")
+points(Chr15_target, -log10(pv2.full.q.values[Chr15_target]), col = "black")
+points(Chr16_target, -log10(pv2.full.q.values[Chr16_target]), col = "darkgreen")
+points(Chr17_target, -log10(pv2.full.q.values[Chr17_target]), col = "pink")
+points(Chr18_target, -log10(pv2.full.q.values[Chr18_target]), col = "brown")
+points(Con15l_target, -log10(pv2.full.q.values[Con15l_target]), col = "darkblue")
+points(Con45l_target, -log10(pv2.full.q.values[Con45l_target]), col = "darkorange")
+
+
+# Add a legend to the plot
+legend("topleft", 
+       legend = c("Chr4", "Chr6", "Chr8", "Chr9", "Chr10", 
+                  "Chr13", "Chr14", "Chr15", "Chr16", "Chr17", 
+                  "Chr18", "Con15l", "Con45l"),
+       col = c("red", "blue", "lightblue", "magenta", "orange", 
+               "green", "yellow", "black", "darkgreen", "pink", 
+               "brown", "darkblue", "darkorange"),
+       pch = 16, # Use circles as point markers
+       bty = "n") # Remove box around legend
+
+```
+
 ## Enrichment of candidate climate genes
 
 ## Association between body size and environmental variables
