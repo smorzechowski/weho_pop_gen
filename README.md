@@ -920,6 +920,107 @@ legend("topleft",
 
 ## Enrichment of candidate climate genes
 
+I collated a list of avian candidate genes for climate adaptation from an extensive literature search. I also used a list of candidate climate genes for vertebrates assembled in [Wollenberg Valero et al. 2022](https://besjournals.onlinelibrary.wiley.com/doi/full/10.1111/1365-2656.13617). 
+
+I used the R package `regioneR` to conduct enrichment tests of these candidate climate genes in putative inversions. The goal was to determine if these candidates are significantly more likely to be found in inversions compared to the null distribution.
+
+```
+library(regioneR)
+library(GenomicRanges)  # For creating GRanges objects
+library(rtracklayer)
+library(ggplot2)
+library(patchwork)
+library(cowplot)
+
+setwd("~/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/regioneR")
+
+gr_PCR <- import("inversions_updated.bed",format="BED")
+
+gr_avian <- import("Nleu_avian_candidate_climate_genes_sorted_IDs.bed")
+gr_vertebrate <- import("Nleu_vertebrate_pEAGs_genes_sorted_IDs.bed")
+
+genome <- read.table("Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded_PAR_masked.fasta.genome",header=F,comment.char = "")
+genome$V2 <- as.numeric(genome$V2)
+
+genome_vector <- setNames(genome$V2,genome$V1)
+str(genome_vector)
+genome_gr <- GRanges(
+  seqnames = names(genome_vector),
+  ranges = IRanges(start = 1, end = as.numeric(genome_vector))
+)
+
+
+
+pt1 <- overlapPermTest(
+  A = gr_avian,         # Candidate regions
+  B = gr_PCR,          # Annotation regions (e.g., inversions)
+  genome = genome_gr, # Specify the genome (or you can provide a custom genome definition)
+  ntimes = 1000             # Number of permutations to build the null distribution
+)
+
+null_mean <- mean(pt1$numOverlaps$permuted)
+fold_enrichment <- 98 / null_mean
+
+fold_enrichment
+
+data <- data.frame(pt1$numOverlaps$permuted)
+
+pt1
+
+plot1 <- ggplot(data,aes(pt1.numOverlaps.permuted))+
+  geom_density(trim=TRUE)+
+  xlab("Overlap of avian candidate climate genes in MORs")+
+  ylab("Density")+
+  ggtitle("A.")+
+#  geom_vline(xintercept=79.337,linetype="dashed",color='black')+
+  geom_vline(xintercept=98,color='red',linewidth=2)+
+  theme_minimal()+
+  theme(axis.title = element_text(size=15),
+        axis.text = element_text(size=14),
+        title=element_text(size=20))
+  
+
+plot1
+
+
+
+pt2 <- overlapPermTest(
+  A = gr_vertebrate,         # Candidate regions
+  B = gr_PCR,          # Annotation regions (e.g., inversions)
+  genome = genome_gr, # Specify the genome (or you can provide a custom genome definition)
+  ntimes = 1000             # Number of permutations to build the null distribution
+)
+
+head(pt2$numOverlaps)
+
+
+null_mean <- mean(pt2$numOverlaps$permuted)
+fold_enrichment <- 143 / null_mean
+
+pt2
+fold_enrichment
+
+data <- data.frame(pt2$numOverlaps$permuted)
+
+plot2 <- ggplot(data,aes(pt2.numOverlaps.permuted))+
+  geom_density(trim=TRUE)+
+  xlab("Overlap of vertebrate candidate climate genes in MORs")+
+  ylab("Density")+
+  ggtitle("B.")+
+ # geom_vline(xintercept=95.497,linetype="dashed",color='black')+
+  geom_vline(xintercept=143,color='red',linewidth=2)+
+  theme_minimal()+
+  theme(axis.title = element_text(size=15),
+        axis.text = element_text(size=14),
+        title=element_text(size=20))
+
+final_plot <- plot1/plot2
+final_plot
+
+
+
+```
+
 ## Association between body size and environmental variables
 
 
