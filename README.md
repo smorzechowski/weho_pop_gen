@@ -652,6 +652,71 @@ ggplot(data_1a,aes(V6,V4))+
 
 
 ### Calculating genotype likelihoods
+
+I calculated genotype likelihoods using the program ANGSD. I did this on the full dataset (all individuals, autosomes only) and the male dataset (autosomes + neo-Z chromosome). I employed various filters and quality cut-offs and produced genotype likelihoods in the beagle file format. 
+
+Example: Calculating genotype likelihoods for autosomes and the full dataset:
+
+```
+BASEDIR='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/14-angsd'
+ANGSD='/n/home09/smorzechowski/bin/angsd/angsd'
+REF='/n/holylfs04/LABS/edwards_lab/Lab/smorzechowski/meliphagid/ReferenceAssemblies/Nleucotis/Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded_PAR_masked.fasta'
+RM_DIR='/n/holylfs04/LABS/edwards_lab/Lab/smorzechowski/meliphagid/ReferenceAssemblies/Nleucotis/Nleu_final_genome_softmask'
+
+PCANGSD='/n/home09/smorzechowski/bin/pcangsd/pcangsd/pcangsd.py'
+
+# index the sites file, do this just once
+$ANGSD sites index $RM_DIR'/Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded_PAR_masked_sites_keep_1based.txt'
+
+bamlist=$1
+region=$2
+out=$3
+
+# activate dependencies for pcangsd
+module load python
+source activate pcangsd
+module purge
+
+# PCA based on all SNPs without LD pruning first
+# minor allele freq > 0.05
+
+$ANGSD -b $BASEDIR'/sample_lists/'$bamlist \
+-anc $REF \
+-rf $BASEDIR'/regions/'$region \
+-out $BASEDIR'/results/'$out \
+-minMapQ 30 \
+-minQ 30 \
+-doMaf 1 \
+-minMaf 0.05 \
+-SNP_pval 2e-6 \
+-GL 1 \
+-doGlf 2 \
+-doMajorMinor 1 \
+-skipTriallelic 1 \
+-doPost 1 \
+-doIBS 1 \
+-doCounts 1 \
+-doCov 1 \
+-makeMatrix 1 \
+-P 8 \
+-sites $RM_DIR'/Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded_PAR_masked_sites_keep_1based.txt' \
+-remove_bads 1 \
+-uniqueOnly 1 \
+
+```
+
+Then, I ran PCAngsd to calculate PCA and visualize population structure. 
+
+```
+# Run PCAngsd
+pcangsd \
+-b $BASEDIR'/results/'$out'.beagle.gz' \
+-o $BASEDIR'/results/'$out'_pcangsd_thinned' \
+--geno 0.1 \
+--threads 8 \
+
+```
+
 ### PCA and population structure
 
 ### Local PCA with `local_pcangsd`
