@@ -46,7 +46,7 @@ I was also greatly facilitated by suggestions and helpful discussion with Dr. Te
   - [Estimating coverage to verify sex chromosome complement](#estimating-coverage-to-verify-sex-chromosome-complement)
   - [Calculating genotype likelihoods](#calculating-genotype-likelihoods)
   - [PCA and population structure](#pca-and-population-structure)
-  - [Local PCA with `local_pcangsd`](#local-pca-with-local-pcangsd)
+  - [Local PCA with `local_pcangsd`](#local-pca-with-local_pcangsd)
   - [Creating beagle files for LEA](#creating-beagle-files-for-lea)
   - [Genome-wide summary statistics](#genome-wide-summary-statistics)
 - [GATK pipeline](#gatk-pipeline)
