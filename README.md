@@ -920,9 +920,9 @@ legend("topleft",
 
 ## Enrichment of candidate climate genes
 
-I collated a list of avian candidate genes for climate adaptation from an extensive literature search. I also used a list of candidate climate genes for vertebrates assembled in [Wollenberg Valero et al. 2022](https://besjournals.onlinelibrary.wiley.com/doi/full/10.1111/1365-2656.13617). 
+I collated a list of avian candidate climate genes from an extensive literature search. I also used a list of vertebrate candidate climate genes assembled in [Wollenberg Valero et al. 2022](https://besjournals.onlinelibrary.wiley.com/doi/full/10.1111/1365-2656.13617). 
 
-I used the R package `regioneR` to conduct enrichment tests of these candidate climate genes in putative inversions. The goal was to determine if these candidates are significantly more likely to be found in inversions compared to the null distribution.
+I used the R package `regioneR` to conduct enrichment tests of these candidate climate genes in putative inversions. The goal was to determine if these candidates are significantly more likely to be found in inversions compared to random expectations.
 
 ```
 library(regioneR)
