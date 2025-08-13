@@ -834,7 +834,7 @@ dev.off()
 
 For running latent factor mixed models in the R package `LEA` using the `lfmm2()` function, I first had to convert the input files to .geno format (`ped2geno`). I also converted the text file of environmental predictors to .env format with `write.env()`.
 
-The environmental data can be summarized into the first two principal component axes or specific, relevant variables can be selected from the BioClim database to test for genotype-environment associations. 
+The environmental data can be summarized into the first two principal components, otherwise specific, relevant variables can be selected from the BioClim database to test for genotype-environment associations. 
 
 The most basic LEA analysis consists of reading in the data, running the models with specified values of K (the number of latent factors), computing the multivariate tests of significance and adjusting the p-values with the BH procedure. 
 
