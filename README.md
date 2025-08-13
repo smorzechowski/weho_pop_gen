@@ -47,7 +47,7 @@ I was also greatly facilitated by suggestions and helpful discussion with Dr. Te
   - [Calculating genotype likelihoods](#calculating-genotype-likelihoods)
   - [PCA and population structure](#pca-and-population-structure)
   - [Local PCA with `local_pcangsd`](#local-pca-with-local_pcangsd)
-  - [Creating imputed input files for LEA](#creating-imputed-input-files-for-lea)
+  - [Creating imputed vcf files for LEA](#creating-imputed-vcf-files-for-lea)
   - [Genome-wide summary statistics](#genome-wide-summary-statistics)
 - [GATK pipeline](#gatk-pipeline)
   - [Merging bam files and marking duplicates](#merging-bam-files-and-marking-duplicates)
@@ -680,7 +680,7 @@ python /n/home09/smorzechowski/local_pcangsd_script.py $input $store $zarr $tmp 
 done
 ```
 
-### Creating imputed input files for LEA
+### Creating imputed vcf files for LEA
 
 First, I ran ANGSD with all the necessary filters (excluding sites with more than 15% missing data, for example, using `-minInd 55` for the full dataset and `-minInd 36` for the male dataset) the `-doBcf 1` option to create the .bcf file format needed for converting to .vcf.gz for the imputation program BEAGLE.
 
@@ -711,7 +711,7 @@ $ANGSD -b $BASEDIR'/sample_lists/'$bamlist \
 -doBcf 1 \
 ```
 
-I filtered for biallelic SNPs and converted the bcf format to vcf.gz with bcftools and then filtered for the desired maximum mean depth. 
+I filtered for biallelic SNPs and converted the bcf format to vcf.gz format with bcftools and then filtered for the desired maximum mean depth. 
 
 ```
 module load python
