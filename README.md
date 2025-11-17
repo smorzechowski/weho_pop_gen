@@ -1,6 +1,9 @@
 # Scripts associated with a population genomic analysis of White-eared Honeyeaters (*Nesoptilotis leucotis*)
 
-This readme provides an overview of the genomic analyses conducted in this project. I primarily ran the ANGSD pipeline for variant calling because I sequenced 72 individuals at an average depth of 6x coverage, which is in the low-to-mid coverage range best suited for the genotype likelihood framework of ANGSD. Howevever, I include the manual GATK pipeline for hard-calling variants as well.  
+This readme provides an overview of the genomic analyses conducted in this project focusing on genotype-environment associations in White-eared Honeyeaters to identify putative genomic regions involved in adaptation to aridity. I primarily ran the ANGSD pipeline for variant calling because I sequenced 72 individuals at an average depth of 6x coverage, which is in the low-to-mid coverage range suited for the genotype likelihood framework of ANGSD. Howevever, I include my scripts for hard-calling variants with GATK as well. I deployed a manual variant calling pipeline for the purpose of robustly analyzing variants on neo-sex chromosomes in males and females. 
+
+I am quite excited by new automated Snakemake pipelines like [snpArcher](https://github.com/harvardinformatics/snpArcher) (implementing GATK) and [PopGLen](https://github.com/zjnolen/PopGLen) (implementing ANGSD). I believe snpArcher has an option for specifying ploidy, which is excellent, but I haven't yet implemented it or checked out the capabilities of PopGLen. I think routinely including sex chromosomes in population genomic and conservation genomic analyses would be a big step forward, especially if they could be fully incorporated into automated pipelines, which researchers with less familiarity with sex chromosomes could easily utilize and understand.   
+
 
 The software and programs used in this project include:
 
@@ -16,12 +19,19 @@ The software and programs used in this project include:
 - [GATK](https://gatk.broadinstitute.org/hc/en-us)
 - [ANGSD](https://www.popgen.dk/angsd/index.php/ANGSD)
 - [PCAngsd](https://github.com/Rosemeis/pcangsd)
+- [local_pcangsd](https://github.com/alxsimon/local_pcangsd)
+  - [lostruct](https://github.com/jguhlin/lostruct-py)
 - [ngsRelate](https://github.com/ANGSD/NgsRelate)
 - [ngsLD](https://github.com/fgvieira/ngsLD)
 - [vcftools](https://vcftools.github.io/index.html)
 - [bcftools](https://samtools.github.io/bcftools/bcftools.html)
 - [qualimap](http://qualimap.conesalab.org/)
 - [R (v4.3.2)](https://www.r-project.org/)
+
+
+I was greatly assisted by helpful discussion with Dr. Elsie Shogren and her excellent [github repository](https://github.com/ehshogren/MyzomelaPopulationGenomics), the comprehensive [lsWGS tutorials](https://github.com/nt246/lcwgs-guide-tutorial) from the Therkildsen Lab, as well as a [custom python script](https://github.com/drewschield/Z-chromosome_analysis_hirundo/blob/main/scripts/identify_female_Zhet_sites.py) by Dr. Drew Schield, recommended to me  by Elsie. This script parses a VCF file from GATK to identify and remove spurious heterozygote variant calls on the Z chromosome in females. Elsie adapted this script to identify and remove spurious heterozygote calls on the W chromosome in females as well.       
+
+I was also greatly facilitated by suggestions and helpful discussion with Dr. Teresa Pegan, who recommended a [github repository](https://github.com/alxsimon/local_pcangsd) that combines PCAngsd with lostruct in python to run local PCA in sliding windows across the genome to detect outliers in PCA space (often indicative of structural variants like inversions).
 
 
 # Contents
@@ -36,15 +46,15 @@ The software and programs used in this project include:
   - [Estimating coverage to verify sex chromosome complement](#estimating-coverage-to-verify-sex-chromosome-complement)
   - [Calculating genotype likelihoods](#calculating-genotype-likelihoods)
   - [PCA and population structure](#pca-and-population-structure)
-  - [Local PCA with local_pcangsd](#local-pca-with-local-pcangsd)
-  - [Creating beagle files for LEA](#creating-beagle-files-for-lea)
+  - [Local PCA with `local_pcangsd`](#local-pca-with-local_pcangsd)
+  - [Creating imputed vcf files for LEA](#creating-imputed-vcf-files-for-lea)
   - [Genome-wide summary statistics](#genome-wide-summary-statistics)
 - [GATK pipeline](#gatk-pipeline)
   - [Merging bam files and marking duplicates](#merging-bam-files-and-marking-duplicates)
   - [Split genome into intervals](#split-genome-into-intervals)
   - [Running haplotype caller](#running-haplotype-caller)
   - [Setting up genomicsDB for import](#setting-up-genomicsdb-for-import)
-  - [Running genotypeGVCF]#(running-genotypeGVCF)
+  - [Running genotypeGVCF](#running-genotypeGVCF)
 - [Genotype-environment association analysis](#genotype-environment-association-analysis)
   - [sNMF analysis to estimate K ancestry proportions](#snmf-analysis-to-estimate-k-ancestry-proportions)
   - [LEA analysis](#lea-analysis)
@@ -435,7 +445,7 @@ samtools flagstat $MERGE_DIR/${SAMPLE}_bwa_merge_sort.bam > $MERGE_DIR/${SAMPLE}
 
 ### Removing duplicates and clipping reads
 
-Next, it is necessary to remove PCR and optical duplicates, which are a normal part of the Illumina short-read sequencing process. I used Picard to mark and *remove* the duplicates because I was not sure whether ANGSD can interpret flags in the same way that GATK does. For GATK, it is sufficient to mark reads as being duplicates, rather than removing them; GATK will not include them in the variant calling process.
+Next, it is necessary to flag/remove PCR and optical duplicates, which are a normal part of the Illumina short-read sequencing process. I used Picard to mark and *remove* the duplicates (`REMOVE_DUPLICATES=true`) because I was not certain if ANGSD interprets flags in the same way that GATK does. For GATK, it is sufficient to mark reads as being duplicates, rather than removing them; once flagged, GATK will not include them in the variant calling process. Upon further digging, it seems that either flagging or removing duplicates works in ANGSD as well as GATK, I just went with the conservative option of removing them altogether.
 
 ```
 # Mark duplicates with Picard
@@ -452,15 +462,17 @@ ASSUME_SORTED=true \
 
 ```
 
-Next, I needed to soft clip reads for downstream ANGSD analyses because ANGSD is not able to account for the fact that forward and reverse reads may be overlapping. ANGSD tutorials generally recommend `bamUtil clipOverlap` for this, but I was finding that running this software created a lot of badmate flags, etc. when I ran `ValidateSamFile`. It may have been because of software conflict, I'm not sure. Regardless, I found another way to softclip reads with `fgbio ClimBam`, which seems to have worked great! 
+Next, I needed to clip overlapping reads for downstream ANGSD analyses because ANGSD is not able to account for the fact that forward and reverse reads may be overlapping unless they are explicitly flagged as such. ANGSD tutorials generally recommend `bamUtil clipOverlap` for this, but I was finding that running this software created a lot of invalid CIGAR strings, etc. when I ran `ValidateSamFile`. It may have been because of software conflict, I'm not sure. [Others](https://github.com/statgen/bamUtil/issues/72) have discovered this issue as well. Regardless, I found another way to clip overlapping reads with `fgbio` [ClipBam](https://fulcrumgenomics.github.io/fgbio/tools/latest/ClipBam.html), which seems to have worked great! 
+
+Note: I chose to softclip the overlaps rather than hardclipping. From what I understand, ANGSD can read the CIGAR flags and ignore overlapping softclipped regions accordingly. A more conservative option is hardclipping all overlaps, however, I was trying to replicate the behavior of `bamUtil clipOverlap`, which to the best of my knowledge and digging, does do softclipping (see comment from mktrost [here](https://github.com/statgen/bamUtil/issues/15) for instance). However, if anyone finds any information to the contrary, I am happy to stand corrected!
 
 ```
 
-# sort reads by query name for fgbio ClipBam
+# need to sort reads by query name for fgbio ClipBam - see user manual
 # remove -u which uncompresses, I don't think we want that
 samtools sort -n -@ $CPU $DEDUP_DIR/${SAMPLE}_bwa_dedup.bam -o $DEDUP_DIR/${SAMPLE}_bwa_dedup_namesort.bam
 
-# soft clip reads using ClipBam from fgbio
+# softclip reads using ClipBam from fgbio
 fgbio -Xmx45G ClipBam \
     -i $DEDUP_DIR/${SAMPLE}_bwa_dedup_namesort.bam \
     -o $CLIP_DIR/${SAMPLE}_bwa_dedup_clip.bam \
@@ -640,9 +652,195 @@ ggplot(data_1a,aes(V6,V4))+
 
 
 ### Calculating genotype likelihoods
+
+I calculated genotype likelihoods using the program ANGSD. I did this on the full dataset (all individuals, autosomes only) and the male dataset (autosomes + neo-Z chromosome). I employed various filters and quality cut-offs and produced genotype likelihoods in the beagle file format. 
+
+Example: Calculating genotype likelihoods for autosomes and the full dataset:
+
+```
+BASEDIR='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/14-angsd'
+ANGSD='/n/home09/smorzechowski/bin/angsd/angsd'
+REF='/n/holylfs04/LABS/edwards_lab/Lab/smorzechowski/meliphagid/ReferenceAssemblies/Nleucotis/Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded_PAR_masked.fasta'
+RM_DIR='/n/holylfs04/LABS/edwards_lab/Lab/smorzechowski/meliphagid/ReferenceAssemblies/Nleucotis/Nleu_final_genome_softmask'
+
+PCANGSD='/n/home09/smorzechowski/bin/pcangsd/pcangsd/pcangsd.py'
+
+# index the sites file, do this just once
+$ANGSD sites index $RM_DIR'/Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded_PAR_masked_sites_keep_1based.txt'
+
+bamlist=$1
+region=$2
+out=$3
+
+# activate dependencies for pcangsd
+module load python
+source activate pcangsd
+module purge
+
+# PCA based on all SNPs without LD pruning first
+# minor allele freq > 0.05
+
+$ANGSD -b $BASEDIR'/sample_lists/'$bamlist \
+-anc $REF \
+-rf $BASEDIR'/regions/'$region \
+-out $BASEDIR'/results/'$out \
+-minMapQ 30 \
+-minQ 30 \
+-doMaf 1 \
+-minMaf 0.05 \
+-SNP_pval 2e-6 \
+-GL 1 \
+-doGlf 2 \
+-doMajorMinor 1 \
+-skipTriallelic 1 \
+-doPost 1 \
+-doIBS 1 \
+-doCounts 1 \
+-doCov 1 \
+-makeMatrix 1 \
+-P 8 \
+-sites $RM_DIR'/Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded_PAR_masked_sites_keep_1based.txt' \
+-remove_bads 1 \
+-uniqueOnly 1 \
+
+```
+
+Then, I ran PCAngsd to calculate PCA and visualize population structure. 
+
+```
+# Run PCAngsd
+pcangsd \
+-b $BASEDIR'/results/'$out'.beagle.gz' \
+-o $BASEDIR'/results/'$out'_pcangsd_thinned' \
+--geno 0.1 \
+--threads 8 \
+
+```
+
 ### PCA and population structure
-### Local PCA with local_pcangsd
-### Creating beagle files for LEA
+
+### Local PCA with `local_pcangsd`
+
+The python script I adapted from [Alexis Simon](https://www.normalesup.org/~asimon/projects/local_pcangsd.html) to combine PCAngsd and lostruct can be found [here](https://github.com/smorzechowski/weho_pop_gen/blob/master/local_pcangsd_scripts/local_pcangsd_script.py).
+
+Basically, the python script runs PCAngsd separately in pre-defined windows (e.g. a window size of 50,000 bp with a minimum number of 500 variants, for example) across each scaffold/chromosome. It calculates the pair-wise distance between windows, summarizes the variation with Principal Coordinates Analysis (PCoA, which is equivalent to classical metric multidimensional scaling, or MDS), and plots the first two axes (MDS1 and MDS2) in bivariate space. It finds outlier regions where the MDS scores are different from the rest of the chromosome/scaffold. It then merges those outlier windows, runs PCAngsd on this region, and plots the first two PCA coordinates to visualize the population structure in this outlier region. A PCA with three distinct clusters defined across PC1 and no differentiation across PC2 is a potential indication of an inversion polymorphism.  
+
+This program requires a beagle file as input. I split the beagle files by chromosomes/scaffold and ran local_pcangsd separately on each. The input is compressed in zarr format, and the results are written to a zarr file. 
+
+```
+cat unplaced_scaffolds_beagles.txt | while read line
+do
+prefix=`echo $line |sed 's/.beagle.gz//g'`
+input="/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/14-angsd/results/$line"
+store="/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/16-local_pcangsd/zarr_dir/${prefix}.zarr"
+zarr="/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/16-local_pcangsd/results/${prefix}_results.zarr"
+tmp="/n/home09/smorzechowski/tmp_local_pcangsd"
+outdir="/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/16-local_pcangsd/plots/"
+col=0
+pop='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/16-local_pcangsd/all_samples_pops.tsv'
+wind=10000
+var=50
+
+python /n/home09/smorzechowski/local_pcangsd_script.py $input $store $zarr $tmp $prefix $outdir $col $pop $wind $var
+done
+```
+
+### Creating imputed vcf files for LEA
+
+First, I ran ANGSD with all the necessary filters (excluding sites with more than 15% missing data, for example, using `-minInd 55` for the full dataset and `-minInd 36` for the male dataset) the `-doBcf 1` option to create the .bcf file format needed for converting to .vcf.gz for the imputation program BEAGLE.
+
+```
+$ANGSD -b $BASEDIR'/sample_lists/'$bamlist \
+-ref $REF \
+-rf $BASEDIR'/regions/'$region \
+-out $BASEDIR'/results/'$out \
+-minMapQ 30 \
+-minQ 30 \
+-doMaf 1 \
+-minMaf 0.05 \
+-SNP_pval 1e-6 \
+-GL 1 \
+-doGlf 2 \
+-doMajorMinor 1 \
+-skipTriallelic 1 \
+-doPost 1 \
+-doIBS 1 \
+-doCounts 1 \
+-doCov 1 \
+-makeMatrix 1 \
+-P 8 \
+-sites $RM_DIR'/Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded_PAR_masked_sites_keep_1based.txt' \
+-remove_bads 1 \
+-uniqueOnly 1 \
+-minInd 36 \
+-doBcf 1 \
+```
+
+I filtered for biallelic SNPs and converted the bcf format to vcf.gz format with bcftools and then filtered for the desired maximum mean depth. 
+
+```
+module load python
+source activate bcftools
+module purge
+
+#input=$1
+#input='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/14-angsd/results/Nleu_autos_lea.bcf'
+input='/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/14-angsd/results/Nleu_autos_neoZ_lea_males.bcf'
+prefix=$(echo "$input" | sed 's:.*/::; s/.bcf//g')
+
+#prefix=$(basename "$input" .bcf)
+#prefix=`echo $input |sed 's/.bcf//g'`
+
+# only include snps and biallelic sites
+bcftools view -v snps --max-alleles 2 --threads $SLURM_CPUS_PER_TASK $input -Oz -o $prefix'.vcf.gz'
+
+module load python
+source activate vcftools
+module purge
+
+
+#bgzip $prefix'.vcf'
+tabix -p vcf $prefix'.vcf.gz'
+
+vcf=$prefix'.vcf.gz'
+
+vcftools --gzvcf $vcf --max-meanDP 9 --recode --stdout | bgzip > $prefix'_depth_filt.vcf.gz'
+
+```
+
+Then, with BEAGLE, I imputed variants for autosomes (all individuals) and autosomes plus the neo-Z chromosome (males only).
+
+```
+bin='/n/home09/smorzechowski/bin'
+module load jdk/20.0.1-fasrc01
+
+input=$1
+#map=$2
+out=$2
+
+java -Xss5m -Xmx80g -jar $bin/beagle.27Jan18.7e1.jar \
+gl=$input \
+out=$out \
+nthreads=16 \
+```
+
+
+Run script: 
+```
+#!/bin/bash
+
+# Run for autosomes
+#input='Nleu_autos_lea_depth_filt.vcf.gz'
+#map='Nleu_autos_lea_depth_filt_plink_v2.map'
+#output='Nleu_autos_lea_depth_filt_imputed'
+#sbatch beagle_imputation.jobscript $input $output
+
+# Run for males: autos and neoZ
+input='Nleu_autos_neoZ_lea_males_depth_filt.vcf.gz'
+output='Nleu_autos_neoZ_lea_males_depth_filt_imputed'
+sbatch beagle_imputation.jobscript $input $output
+
+```
 ### Genome-wide summary statistics
 
 ## GATK pipeline
@@ -654,9 +852,239 @@ I provide a summary of the GATK pipeline below, even though I did not end up usi
 ## Genotype-environment association analysis
 
 ### sNMF analysis to estimate K ancestry proportions
+
+I used the `snmf()` function in the R package `LEA` to determine the best value of K ancestry proportions to use as latent factors in subsequent GEA analyses. 
+
+```
+# Calculate the cross entropy criterion to pick the best value of K ancestral populations
+
+setwd('/n/netscratch/edwards_lab/Lab/smorzechowski/meliphagid/analysis/2024-11-03/19-lea')
+
+
+library(LEA)
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(stringr)
+library(cowplot)
+library(gridExtra)
+
+
+
+gen.imp <- read.geno("Nleu_autos_lea_depth_filt_imputed_thin_plink.geno")
+
+dim(gen.imp)
+
+################
+# running snmf #
+################
+
+project.snmf = snmf("Nleu_autos_lea_depth_filt_imputed_thin_plink.geno",
+                    K = 1:10, 
+                    entropy = TRUE, 
+                    repetitions = 10,
+                    project = "new")
+
+# using project = "new" saves it to a file with .snmfProject extension
+
+png("sNMF_K1_to_10.png", width = 6, height = 4, units = "in", res = 350)
+# plot cross-entropy criterion of all runs of the project
+plot(project.snmf, cex = 1.2, col = "lightblue", pch = 19)
+dev.off()
+
+```
+
+
 ### LEA analysis
 
+For running latent factor mixed models in the R package `LEA` using the `lfmm2()` function, I first had to convert the input files to .geno format (`ped2geno`). I also converted the text file of environmental predictors to .env format with `write.env()`.
+
+The environmental data can be summarized into the first two principal components, otherwise specific, relevant variables can be selected from the BioClim database to test for genotype-environment associations. 
+
+The most basic LEA analysis consists of reading in the data, running the models with specified values of K (the number of latent factors), computing the multivariate tests of significance and adjusting the p-values with the BH procedure. 
+
+
+```
+
+gen.imp <- read.geno("Nleu_autos_lea_depth_filt_imputed_thin_plink.geno")
+
+dim(gen.imp)
+
+#pred <- read.env("Nleu_bioclim_variables_65ind_autos_ordered_noheader.env")
+pred <- read.env("Nleu_bioclim_PC1_PC2_65ind_autos.env")
+
+# Run LEA models
+mod2 <- lfmm2(input = gen.imp, env = pred, K = 2)
+#mod3 <- lfmm2(input = gen.imp, env = pred, K = 3)
+#mod4 <- lfmm2(input = gen.imp, env = pred, K = 4)
+
+# Run multivariate tests, accounting for shared variance (full covariance matrix)
+# K=2
+pv2.full <- lfmm2.test(object = mod2,
+                 input = gen.imp,
+                 env = pred,
+                 full=TRUE)
+
+# Calculate adjusted pvalues for the full model
+pv2.full.q.values <- p.adjust(pv2.full$pvalues, method = "BH")
+#pv3.full.q.values <- p.adjust(pv3.full$pvalues, method = "BH")
+
+```
+
+The most basic plotting of the results can be done in base R. 
+
+```
+
+# Target regions across the genome: chromosomes with putative inversions
+
+Chr4_target = seq(from = 474812, to = 583562,by=1)
+Chr6_target = seq(from = 583563, to = 650966,by=1)
+Chr8_target = seq(from = 700446, to = 757547,by=1)
+Chr9_target = seq(from = 757547, to = 773605,by=1)
+Chr10_target = seq(from = 139148, to = 158627,by=1)
+Chr13_target = seq(from = 172691, to = 201522,by=1)
+Chr14_target = seq(from = 201523, to = 220168,by=1)
+Chr15_target = seq(from = 220169, to = 230157,by=1)
+Chr16_target = seq(from = 230158, to = 247440,by=1)
+Chr17_target = seq(from = 247441, to = 263872,by=1)
+Chr18_target = seq(from = 263872, to = 272643,by=1)
+Con15l_target = seq(from = 773606, to = 789999,by=1)
+Con45l_target = seq(from = 790000, to = 807105,by=1)
+
+# Plot of all variables combined with BH correction K=2
+plot(-log10(pv2.full.q.values), col = "grey", cex = .4, pch = 19)
+abline(h = -log10(0.0000005), lty = 2, col = "darkred")
+
+points(Chr4_target, -log10(pv2.full.q.values[Chr4_target]), col = "red")
+points(Chr6_target, -log10(pv2.full.q.values[Chr6_target]), col = "blue")
+points(Chr8_target, -log10(pv2.full.q.values[Chr8_target]), col = "lightblue")
+points(Chr9_target, -log10(pv2.full.q.values[Chr9_target]), col = "magenta")
+points(Chr10_target, -log10(pv2.full.q.values[Chr10_target]), col = "orange")
+points(Chr13_target, -log10(pv2.full.q.values[Chr13_target]), col = "green")
+points(Chr14_target, -log10(pv2.full.q.values[Chr14_target]), col = "yellow")
+points(Chr15_target, -log10(pv2.full.q.values[Chr15_target]), col = "black")
+points(Chr16_target, -log10(pv2.full.q.values[Chr16_target]), col = "darkgreen")
+points(Chr17_target, -log10(pv2.full.q.values[Chr17_target]), col = "pink")
+points(Chr18_target, -log10(pv2.full.q.values[Chr18_target]), col = "brown")
+points(Con15l_target, -log10(pv2.full.q.values[Con15l_target]), col = "darkblue")
+points(Con45l_target, -log10(pv2.full.q.values[Con45l_target]), col = "darkorange")
+
+
+# Add a legend to the plot
+legend("topleft", 
+       legend = c("Chr4", "Chr6", "Chr8", "Chr9", "Chr10", 
+                  "Chr13", "Chr14", "Chr15", "Chr16", "Chr17", 
+                  "Chr18", "Con15l", "Con45l"),
+       col = c("red", "blue", "lightblue", "magenta", "orange", 
+               "green", "yellow", "black", "darkgreen", "pink", 
+               "brown", "darkblue", "darkorange"),
+       pch = 16, # Use circles as point markers
+       bty = "n") # Remove box around legend
+
+```
+
 ## Enrichment of candidate climate genes
+
+I collated a list of avian candidate climate genes from an extensive literature search. I also used a list of vertebrate candidate climate genes assembled in [Wollenberg Valero et al. 2022](https://besjournals.onlinelibrary.wiley.com/doi/full/10.1111/1365-2656.13617). 
+
+I used the R package `regioneR` to conduct enrichment tests of these candidate climate genes in putative inversions. The goal was to determine if these candidates are significantly more likely to be found in inversions compared to random expectations.
+
+```
+library(regioneR)
+library(GenomicRanges)  # For creating GRanges objects
+library(rtracklayer)
+library(ggplot2)
+library(patchwork)
+library(cowplot)
+
+setwd("~/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/regioneR")
+
+gr_PCR <- import("inversions_updated.bed",format="BED")
+
+gr_avian <- import("Nleu_avian_candidate_climate_genes_sorted_IDs.bed")
+gr_vertebrate <- import("Nleu_vertebrate_pEAGs_genes_sorted_IDs.bed")
+
+genome <- read.table("Nleucotis_hifi_v1.0_hc_sm_fx_scaffolded_PAR_masked.fasta.genome",header=F,comment.char = "")
+genome$V2 <- as.numeric(genome$V2)
+
+genome_vector <- setNames(genome$V2,genome$V1)
+str(genome_vector)
+genome_gr <- GRanges(
+  seqnames = names(genome_vector),
+  ranges = IRanges(start = 1, end = as.numeric(genome_vector))
+)
+
+
+
+pt1 <- overlapPermTest(
+  A = gr_avian,         # Candidate regions
+  B = gr_PCR,          # Annotation regions (e.g., inversions)
+  genome = genome_gr, # Specify the genome (or you can provide a custom genome definition)
+  ntimes = 1000             # Number of permutations to build the null distribution
+)
+
+null_mean <- mean(pt1$numOverlaps$permuted)
+fold_enrichment <- 98 / null_mean
+
+fold_enrichment
+
+data <- data.frame(pt1$numOverlaps$permuted)
+
+pt1
+
+plot1 <- ggplot(data,aes(pt1.numOverlaps.permuted))+
+  geom_density(trim=TRUE)+
+  xlab("Overlap of avian candidate climate genes in MORs")+
+  ylab("Density")+
+  ggtitle("A.")+
+#  geom_vline(xintercept=79.337,linetype="dashed",color='black')+
+  geom_vline(xintercept=98,color='red',linewidth=2)+
+  theme_minimal()+
+  theme(axis.title = element_text(size=15),
+        axis.text = element_text(size=14),
+        title=element_text(size=20))
+  
+
+plot1
+
+
+
+pt2 <- overlapPermTest(
+  A = gr_vertebrate,         # Candidate regions
+  B = gr_PCR,          # Annotation regions (e.g., inversions)
+  genome = genome_gr, # Specify the genome (or you can provide a custom genome definition)
+  ntimes = 1000             # Number of permutations to build the null distribution
+)
+
+head(pt2$numOverlaps)
+
+
+null_mean <- mean(pt2$numOverlaps$permuted)
+fold_enrichment <- 143 / null_mean
+
+pt2
+fold_enrichment
+
+data <- data.frame(pt2$numOverlaps$permuted)
+
+plot2 <- ggplot(data,aes(pt2.numOverlaps.permuted))+
+  geom_density(trim=TRUE)+
+  xlab("Overlap of vertebrate candidate climate genes in MORs")+
+  ylab("Density")+
+  ggtitle("B.")+
+ # geom_vline(xintercept=95.497,linetype="dashed",color='black')+
+  geom_vline(xintercept=143,color='red',linewidth=2)+
+  theme_minimal()+
+  theme(axis.title = element_text(size=15),
+        axis.text = element_text(size=14),
+        title=element_text(size=20))
+
+final_plot <- plot1/plot2
+final_plot
+
+
+
+```
 
 ## Association between body size and environmental variables
 
