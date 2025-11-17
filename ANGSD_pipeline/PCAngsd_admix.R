@@ -6,6 +6,7 @@ library(tidyr)
 library(dplyr)
 library(pals)
 library(LEA)
+library(cowplot)
 setwd("~/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/pcangsd/admix")
 
 # Load the admixture data for K=2
@@ -90,27 +91,28 @@ admix_autos <- ggplot(admix_long, aes(x = x_pos, y = proportion)) +
         axis.ticks.x = element_blank(),
         legend.position = "bottom") +
   labs(x = "Location", y = "Admixture Proportion", fill = "Location") +
+  labs(x = "", y = "", fill = "Location") +
   ggtitle("Admixture Analysis (K=2)")+
-  ggtitle("A.")+
+  ggtitle("F.")+
   geom_rect(data = pop_labels, aes(xmin = start - 0.5, xmax = end + 0.5, ymin = -0.05, ymax = 0,fill=pop_f), 
             inherit.aes = FALSE,alpha = 1,show.legend=FALSE)+
   scale_fill_manual(values = custom_colors)+
   theme(axis.title=element_text(size=18),
         axis.text=element_text(size=15),
         plot.title=element_text(face="bold",size=16),
-        )+
-  geom_text(
-    data = pop_labels,
-    aes(
-      x = (start + end) / 2,
-      y = -.1, 
-      label = pop
-    ),
-    inherit.aes = FALSE,
-    size = 3,
-    fontface="bold"
-   # fill = "white"   # a label's background color
-  )
+        )
+#  geom_text(
+#    data = pop_labels,
+#    aes(
+#      x = (start + end) / 2,
+#      y = -.1, 
+#      label = pop
+#    ),
+#    inherit.aes = FALSE,
+#    size = 3,
+#    fontface="bold"
+#    #fill = "white"   # a label's background color
+#  )
 
 admix_autos
 
@@ -279,32 +281,67 @@ admix_neoZ <- ggplot(admix_long, aes(x = x_pos, y = proportion)) +
         axis.ticks.x = element_blank(),
         legend.position = "bottom") +
   labs(x = "Location", y = "Admixture Proportion", fill = "Population") +
+  labs(x = "", y = "", fill = "") +
   ggtitle("Admixture Analysis (K=2)")+
-  ggtitle("B.")+
+  ggtitle("E.")+
   geom_rect(data = pop_labels, aes(xmin = start - 0.5, xmax = end + 0.5, ymin = -0.05, ymax = 0,fill=pop_f), 
             inherit.aes = FALSE,alpha = 1,show.legend=FALSE)+
   scale_fill_manual(values = Mcustom_colors)+
-  geom_text(
-    data = pop_labels,
-    aes(
-      x = (start + end) / 2,
-      y = -.1, 
-      label = pop
-    ),
-    inherit.aes = FALSE,
-    size = 3,
-    fontface="bold"
-   # fill = "white"   # a label's background color
-  )+
+#  geom_text(
+#    data = pop_labels,
+#    aes(
+#      x = (start + end) / 2,
+#      y = -.1, 
+#      label = pop
+#    ),
+#    inherit.aes = FALSE,
+#    size = 3,
+#    fontface="bold"
+#   # fill = "white"   # a label's background color
+#  )+
   theme(axis.title=element_text(size=18),
         axis.text=element_text(size=15),
         plot.title=element_text(face="bold",size=16),
   )
 
-p <- admix_autos / admix_neoZ
+admix_neoZ
 
-p
+plot_admix <- admix_autos / admix_neoZ
+plot_admix <- admix_neoZ / admix_autos
+plot_admix
 
+#######################
+# Create dummy data for legend
+sites <- c("Binya","Bog","Gund","Ing","Mallee","Moon","Mull","Nom","Pill","Reedy","Talla","Walch","Weddin","Zost")
+cols <- unname(glasbey()[1:14])        # 12 colors from a palette
+#cols <- c(cols, "#999999", "#000000")                 # add 2 more manually
+
+legend_df <- data.frame(site = factor(sites, levels = sites))
+
+legend_df$site
+legend_df$site <- factor(legend_df$site, levels = c("Mallee","Binya","Ing","Nom","Weddin","Zost","Gund","Pill","Mull","Reedy","Talla","Moon","Bog","Walch"))
+cols_reordered <- cols[match(levels(legend_df$site), sites)]
+# Make an empty plot that only draws points (for legend)
+dummy_legend <- ggplot(legend_df, aes(x = 1, y = 1, color = site)) +
+  geom_point(size = 6) +
+  scale_color_manual(values = cols_reordered, name = "Location") +
+  theme_void() +
+  theme(
+    legend.position = "bottom",
+    legend.title = element_text(face = "bold",size=15),
+    legend.key.size = unit(0.6, "lines"),
+    legend.text = element_text(size = 14)
+  )
+
+dummy_legend
+
+
+legend_only <- get_legend(dummy_legend)
+
+components <- ggplotGrob(dummy_legend)
+custom_legend <- gtable::gtable_filter(components, "guide-box-top")
+plot_admix_legend <- plot_grid(plot_admix,custom_legend,  ncol = 1,rel_heights = c(1,0.1))
+plot_admix_legend
 
 ggsave("C:/Users/sophi/Documents/PhD research/Neo sex chromosome/WEHE pop gen chapter/WEHE pop gen/figures/Figure5_admixture_autos_neoZ.png", 
        plot = p, dpi = 300, width = 8.5, height = 10, units = "in")
